@@ -1,24 +1,35 @@
 ---
 title: "Group 11"
-format: revealjs
-editor: visual
+number-sections: true
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+  pdf: default
+editor_options: 
+  chunk_output_type: console
 ---
-
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see <https://quarto.org/docs/presentations/>.
-
-## Bullets
-
-When you click the **Render** button a document will be generated that includes:
-
--   Content authored with markdown
--   Output from executable code
-
-## Code
-
-When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
-
 ```{r}
-1 + 1
+#| echo: false
+#| warning: false
+#| message: false
+library(ggplot2)
+library(tidyverse)
+library(gt)
+library(patchwork)
+library(gridExtra)
+library(knitr)
+library(kableExtra)
+library(dplyr)
+library(broom)
+library(MASS)
+library(gt)
+library(caret)
+library(ResourceSelection)
+library(pROC)
+library(car)
 ```
+# Introduction
+Obesity is a significant public health concern, influenced by various socio-economic and lifestyle factors. This analysis uses data from the 2008-2012 Scottish Health Surveys to explore the relationship between demographic variables, lifestyle habits, and obesity prevalence in Scotland. The dataset includes information on age, gender, employment, dietary habits, and obesity status.
+The objective is to examine trends in obesity prevalence over the survey years and identify differences in obesity rates based on socio-economic and lifestyle factors. The findings will inform public health strategies aimed at addressing obesity.
+@sec-eda provides an exploratory analysis of the dataset, including trends in obesity across different groups. @sec-fda presents the results of a regression analysis, including model diagnostics to assess the model's fit and assumptions. Concluding remarks are in @sec-con.
