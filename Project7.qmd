@@ -1,26 +1,48 @@
----
-title: "Group 11"
-format: revealjs
-editor: visual
----
+# Exploratory data analysis {#sec-eda}
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see <https://quarto.org/docs/presentations/>.
-
-## Bullets
-
-When you click the **Render** button a document will be generated that includes:
-
--   Content authored with markdown
--   Output from executable code
-
-## Code
-
-When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
+@fig-variable-distribution shows the distribution of key categorical variables, including Age Group, Sex, Employment status, Vegetable consumption, and Fruit consumption.The AgeGroup variable shows a skew toward middle-aged individuals, with a lower representation in younger and older age groups. The Sex distribution is relatively balanced, with a slight female predominance, which may influence obesity trends by gender. The Employment variable indicates a higher proportion of employed individuals, suggesting socio-economic factors may play a role in obesity prevalence. The Veg and Fruit consumption distributions highlight a concentration of individuals with low to moderate intake, with a significant proportion reporting infrequent or no consumption. This suggests dietary patterns that may contribute to higher obesity rates, especially when combined with other socio-economic factors.
 
 ```{r}
-1 + 1
-```
+#| echo: false
+#| label: fig-variable-distribution
+#| fig-cap: Distribution of Age Group, Sex, Employment, Vegetable Consumption, and Fruit Consumption in the Dataset.
+#| fig-align: center
+#| fig-width: 8
+#| fig-height: 6
 
-## Test to check whether this works
+data <- read.csv("DAProject7.csv")
+
+data <- data %>%
+  mutate(Employment = case_when(
+    Employment == "In paid employment, self-employed or on gov't training" ~ "Employed",
+    Employment == "Looking for/intending to look for paid work" ~ "Unemployed",
+    TRUE ~ Employment
+  ))
+
+
+p1 <- ggplot(data, aes(x = AgeGroup)) +
+  geom_bar(fill = "skyblue") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+p2 <- ggplot(data, aes(x = Sex)) +
+  geom_bar(fill = "lightcoral") +
+  theme_minimal()
+
+p3 <- ggplot(data, aes(x = Employment)) +
+  geom_bar(fill = "lightgreen") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+
+p4 <- ggplot(data, aes(x = Veg)) +
+  geom_bar(fill = "gold") +
+  theme_minimal()
+
+p5 <- ggplot(data, aes(x = Fruit)) +
+  geom_bar(fill = "plum") +
+  theme_minimal()
+
+grid.arrange(
+  p1, p2, p3, p4, p5,    
+  layout_matrix = rbind(c(1, 2, 3), 
+                        c(4, 5, 3)))
