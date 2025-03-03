@@ -25,4 +25,8 @@ When you click the **Render** button a presentation will be generated that inclu
 1 + 1
 ```
 
+<<<<<<< HEAD
 ## **Conclusions**
+=======
+## Test to check whether this works
+>>>>>>> 27219bff68f7234b60e2aec0ac29f45d479838f8
