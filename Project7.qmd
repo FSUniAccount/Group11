@@ -1,26 +1,18 @@
----
-title: "Group 11"
-format: revealjs
-editor: visual
----
-
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see <https://quarto.org/docs/presentations/>.
-
-## Bullets
-
-When you click the **Render** button a document will be generated that includes:
-
--   Content authored with markdown
--   Output from executable code
-
-## Code
-
-When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
+@fig-yearly-obesity shows the yearly trend of obesity rate in Scotland from 2008 to 2012.The trend shows that after the obesity rate fell in 2009, it rose significantly in 2010, and then gradually fell back and stabilized. The fluctuation in 2010 may reflect the increase in health risk factors that year, while the slowdown after 2011 may be related to health intervention measures and the improvement of awareness of physiological health management. Overall, the obesity rate shows periodic fluctuations, but remains at a relatively high level.
 
 ```{r}
-1 + 1
+#| echo: false
+#| fig-cap: Yearly Obesity Rate Trend in Scotland (2008-2012)
+#| label: fig-yearly-obesity
+#| fig-align: center
+#| fig-width: 6
+#| fig-height: 4
+
+ggplot(yearly_rate, aes(x = Year, y = ObesityRate)) +
+  geom_line(color = "blue", linewidth = 1) +
+  geom_point(color = "darkblue", size = 2) +
+  labs(title = "Yearly Obesity Rate Trend (2008-2012)",
+       y = "Obesity Rate (%)", x = "Year") +
+  theme_minimal()
 ```
 
-## Test to check whether this works
