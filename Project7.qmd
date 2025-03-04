@@ -15,4 +15,3 @@ ggplot(yearly_rate, aes(x = Year, y = ObesityRate)) +
        y = "Obesity Rate (%)", x = "Year") +
   theme_minimal()
 ```
-
