@@ -9,6 +9,7 @@ format:
 editor_options: 
   chunk_output_type: console
 ---
+
 ```{r}
 #| echo: false
 #| warning: false
@@ -33,3 +34,4 @@ library(car)
 Obesity is a significant public health concern, influenced by various socio-economic and lifestyle factors. This analysis uses data from the 2008-2012 Scottish Health Surveys to explore the relationship between demographic variables, lifestyle habits, and obesity prevalence in Scotland. The dataset includes information on age, gender, employment, dietary habits, and obesity status.
 The objective is to examine trends in obesity prevalence over the survey years and identify differences in obesity rates based on socio-economic and lifestyle factors. The findings will inform public health strategies aimed at addressing obesity.
 @sec-eda provides an exploratory analysis of the dataset, including trends in obesity across different groups. @sec-fda presents the results of a regression analysis, including model diagnostics to assess the model's fit and assumptions. Concluding remarks are in @sec-con.
+
