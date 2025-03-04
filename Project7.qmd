@@ -1,26 +1,16 @@
----
-title: "Group 11"
-format: revealjs
-editor: visual
----
-
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see <https://quarto.org/docs/presentations/>.
-
-## Bullets
-
-When you click the **Render** button a document will be generated that includes:
-
--   Content authored with markdown
--   Output from executable code
-
-## Code
-
-When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
+@tbl-yearly-obesity-rate present the yearly obesity rates in Scotland between 2008 and 2012.Overall, the obesity rate dropped to its lowest point in 2009 (28.79%), and then rose sharply in 2010, reaching its highest point in five years (30.47%). After that, the obesity rate fell back and stabilized in 2011-2012. The data shows that there were some fluctuations in the obesity rate during this period, but it generally remained between 29% and 30.5%.
 
 ```{r}
-1 + 1
-```
+#| echo: false
+#| label: tbl-yearly-obesity-rate
+#| tbl-cap: Yearly Obesity Rate in Scotland from 2008 to 2012.
 
-## Test to check whether this works
+yearly_rate <- data %>%
+  group_by(Year) %>%
+  summarise(ObesityRate = mean(Obese == "Yes") * 100)
+
+yearly_rate %>%
+  gt() %>%
+  tab_header(title = "Yearly Obesity Rate (2008-2012)") %>%
+  fmt_number(columns = ObesityRate, decimals = 2)
+```
