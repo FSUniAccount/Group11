@@ -1,0 +1,73 @@
+
+##############################
+# 0) Load Libraries
+##############################
+library(dplyr)
+library(ggplot2)
+library(corrplot)
+
+##############################
+# 1) Read Data
+##############################
+# IMPORTANT: Make sure the path is correct
+df <- read.csv("D:\\HuaweiMoveData\\Users\\13329\\Desktop\\DAProject7.csv",
+               stringsAsFactors = TRUE)
+
+##############################
+# 3) Chi-square Tests (2.5.1)
+##############################
+cat_vars <- c("AgeGroup", "Sex", "Employment", "Veg", "Fruit")
+chi_results <- list()
+
+for (var in cat_vars) {
+  # We assume df$Obese is "Yes"/"No" as a factor
+  chi_results[[var]] <- chisq.test(table(df[[var]], df$Obese))
+}
+
+# Print p-values
+chi_p_values <- sapply(chi_results, function(x) x$p.value)
+print(chi_p_values)
+
+##############################
+# 4) Correlation (2.5.2)
+##############################
+# Create a numeric copy for correlation analysis (do NOT overwrite df)
+df_num <- df
+
+# Convert relevant columns to numeric
+# 1 if "Yes", 0 if "No" for Obese, Veg, Fruit
+df_num$Obese <- as.numeric(df_num$Obese == "Yes")
+df_num$Veg   <- as.numeric(df_num$Veg   == "Yes")
+df_num$Fruit <- as.numeric(df_num$Fruit == "Yes")
+
+# 1 if "Female", 0 if "Male"
+df_num$Sex <- as.numeric(df_num$Sex == "Female")
+
+# Convert factor AgeGroup & Employment to numeric codes
+df_num$AgeGroup   <- as.numeric(as.factor(df_num$AgeGroup))
+df_num$Employment <- as.numeric(as.factor(df_num$Employment))
+
+# Subset columns for correlation
+df_cor <- df_num[, c("AgeGroup", "Sex", "Employment", "Veg", "Fruit", "Obese")]
+
+# Remove columns with zero variance (only 1 unique value)
+non_constant_cols <- sapply(df_cor, function(x) length(unique(x)) > 1)
+df_cor <- df_cor[, non_constant_cols]
+
+# Calculate correlation
+cor_matrix <- cor(df_cor, use = "pairwise.complete.obs")
+
+# Print correlation matrix
+print(cor_matrix)
+
+# Plot correlation heatmap
+corrplot(
+  cor_matrix,
+  method = "color",
+  type = "upper",
+  col = colorRampPalette(c("blue", "white", "red"))(200),
+  tl.col = "black",
+  tl.cex = 0.8,
+  title = "Correlation Heatmap",
+  mar = c(0, 0, 2, 0)
+)
