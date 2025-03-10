@@ -4,21 +4,87 @@ format: revealjs
 editor: visual
 ---
 
-## Quarto
+## 2.4 Group-wise Obesity Rate Analysis
 
-Quarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see <https://quarto.org/docs/presentations/>.
+In this section, we explore the obesity rates by various grouping variables (Age Group, Employment, Vegetable Intake, and Fruit Intake) stratified by Sex. The following code computes the obesity rates and generates bar charts.
 
-## Bullets
-
-When you click the **Render** button a document will be generated that includes:
-
--   Content authored with markdown
--   Output from executable code
-
-## Code
-
-When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
+### 2.4.1 Obesity Rate by Age Group and Sex
 
 ```{r}
-1 + 1
+
+library(dplyr)
+library(ggplot2)
+
+# Read the dataset (update the path as needed)
+df <- read.csv("D:/HuaweiMoveData/Users/13329/Desktop/DAProject7.csv",
+               stringsAsFactors = TRUE)
+
+# Quick check of the structure
+str(df)
+
+# Compute obesity rates by AgeGroup and Sex
+grouped_obesity <- df %>%
+  group_by(AgeGroup, Sex) %>%
+  summarise(ObesityRate = mean(Obese == "Yes") * 100, .groups = "drop")
+
+# Plot obesity rate by Age Group and Sex
+ggplot(grouped_obesity, aes(x = AgeGroup, y = ObesityRate, fill = Sex)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  ggtitle("Obesity Rate by Age Group and Sex") +
+  labs(y = "Obesity Rate (%)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+### 2.4.2 Obesity Rate by Employment Status and Sex
+
+```{r}
+# Compute obesity rates by Employment and Sex
+grouped_employment <- df %>%
+  group_by(Employment, Sex) %>%
+  summarise(ObesityRate = mean(Obese == "Yes") * 100, .groups = "drop")
+
+# Plot obesity rate by Employment Status and Sex
+ggplot(grouped_employment, aes(x = Employment, y = ObesityRate, fill = Sex)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  ggtitle("Obesity Rate by Employment Status and Sex") +
+  labs(y = "Obesity Rate (%)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+### 2.4.3 Obesity Rate by Vegetable Intake and Sex
+
+```{r}
+# Compute obesity rates by Vegetable Intake (Veg) and Sex
+grouped_veg <- df %>%
+  group_by(Veg, Sex) %>%
+  summarise(ObesityRate = mean(Obese == "Yes") * 100, .groups = "drop")
+
+# Plot obesity rate by Vegetable Intake and Sex
+ggplot(grouped_veg, aes(x = Veg, y = ObesityRate, fill = Sex)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  ggtitle("Obesity Rate by Vegetable Intake and Sex") +
+  labs(y = "Obesity Rate (%)")
+
+```
+
+### 2.4.4 Obesity Rate by Fruit Intake and Sex
+
+```{r}
+# Compute obesity rates by Fruit Intake and Sex
+grouped_fruit <- df %>%
+  group_by(Fruit, Sex) %>%
+  summarise(ObesityRate = mean(Obese == "Yes") * 100, .groups = "drop")
+
+# Plot obesity rate by Fruit Intake and Sex
+ggplot(grouped_fruit, aes(x = Fruit, y = ObesityRate, fill = Sex)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  ggtitle("Obesity Rate by Fruit Intake and Sex") +
+  labs(y = "Obesity Rate (%)")
+
 ```
