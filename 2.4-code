@@ -1,0 +1,67 @@
+
+##############################
+# 0) Load Libraries
+##############################
+library(dplyr)
+library(ggplot2)
+library(corrplot)
+
+##############################
+# 1) Read Data
+##############################
+# IMPORTANT: Make sure the path is correct
+df <- read.csv("D:\\HuaweiMoveData\\Users\\13329\\Desktop\\DAProject7.csv",
+               stringsAsFactors = TRUE)
+
+# Quick check of the structure
+str(df)
+# Ensure AgeGroup, Sex, Employment, Veg, Fruit, Obese are all factors or character
+
+##############################
+# 2) Bar Charts (Section 2.4)
+##############################
+# 2.4.1 Obesity by AgeGroup & Sex
+grouped_obesity <- df %>%
+  group_by(AgeGroup, Sex) %>%
+  summarise(ObesityRate = mean(Obese == "Yes") * 100, .groups = "drop")
+
+ggplot(grouped_obesity, aes(x = AgeGroup, y = ObesityRate, fill = Sex)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  ggtitle("Obesity Rate by Age Group and Sex") +
+  labs(y = "Obesity Rate (%)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# 2.4.2 Obesity by Employment & Sex
+grouped_employment <- df %>%
+  group_by(Employment, Sex) %>%
+  summarise(ObesityRate = mean(Obese == "Yes") * 100, .groups = "drop")
+
+ggplot(grouped_employment, aes(x = Employment, y = ObesityRate, fill = Sex)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  ggtitle("Obesity Rate by Employment Status and Sex") +
+  labs(y = "Obesity Rate (%)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# 2.4.3 Obesity by Veg & Sex
+grouped_veg <- df %>%
+  group_by(Veg, Sex) %>%
+  summarise(ObesityRate = mean(Obese == "Yes") * 100, .groups = "drop")
+
+ggplot(grouped_veg, aes(x = Veg, y = ObesityRate, fill = Sex)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  ggtitle("Obesity Rate by Vegetable Intake and Sex") +
+  labs(y = "Obesity Rate (%)")
+
+# 2.4.4 Obesity by Fruit & Sex
+grouped_fruit <- df %>%
+  group_by(Fruit, Sex) %>%
+  summarise(ObesityRate = mean(Obese == "Yes") * 100, .groups = "drop")
+
+ggplot(grouped_fruit, aes(x = Fruit, y = ObesityRate, fill = Sex)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  ggtitle("Obesity Rate by Fruit Intake and Sex") +
+  labs(y = "Obesity Rate (%)")
