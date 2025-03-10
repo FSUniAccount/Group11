@@ -4,21 +4,89 @@ format: revealjs
 editor: visual
 ---
 
-## Quarto
 
-Quarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see <https://quarto.org/docs/presentations/>.
+## 2.5 Variable Relationships
 
-## Bullets
+In this section, we perform chi-square tests to assess the association between categorical variables and obesity status, and then compute a correlation matrix (and its heatmap) on a numeric copy of the data.
 
-When you click the **Render** button a document will be generated that includes:
-
--   Content authored with markdown
--   Output from executable code
-
-## Code
-
-When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
+### 2.5.1 Chi-square Tests
 
 ```{r}
-1 + 1
+# Define categorical variables
+cat_vars <- c("AgeGroup", "Sex", "Employment", "Veg", "Fruit")
+chi_results <- list()
+
+# Perform chi-square tests comparing each categorical variable with Obese status
+for (var in cat_vars) {
+  chi_results[[var]] <- chisq.test(table(df[[var]], df$Obese))
+}
+
+# Extract and print p-values from the chi-square tests
+chi_p_values <- sapply(chi_results, function(x) x$p.value)
+print(chi_p_values)
+
 ```
+
+The printed p-values indicate which factors are significantly associated with obesity status.
+
+### 2.5.2 Correlation Analysis
+
+For the correlation analysis, we create a numeric copy of the data to convert categorical variables into numerical codes.
+
+```{r}
+library(corrplot)
+
+# Create a numeric copy (do NOT overwrite the original df)
+df_num <- df
+
+# Convert categorical variables to numeric
+df_num$Obese      <- as.numeric(df_num$Obese == "Yes")  # 1 if Yes, 0 if No
+df_num$Veg        <- as.numeric(df_num$Veg == "Yes")
+df_num$Fruit      <- as.numeric(df_num$Fruit == "Yes")
+df_num$Sex        <- as.numeric(df_num$Sex == "Female")   # 1 if Female, 0 if Male
+
+# Convert factor variables to numeric codes
+df_num$AgeGroup   <- as.numeric(as.factor(df_num$AgeGroup))
+df_num$Employment <- as.numeric(as.factor(df_num$Employment))
+
+# Subset columns for correlation analysis
+df_cor <- df_num[, c("AgeGroup", "Sex", "Employment", "Veg", "Fruit", "Obese")]
+
+# Remove columns with zero variance (only 1 unique value)
+non_constant_cols <- sapply(df_cor, function(x) length(unique(x)) > 1)
+df_cor <- df_cor[, non_constant_cols]
+
+# Calculate the correlation matrix
+cor_matrix <- cor(df_cor, use = "pairwise.complete.obs")
+print(cor_matrix)
+
+# Plot the correlation heatmap
+corrplot(
+  cor_matrix,
+  method = "color",
+  type = "upper",
+  col = colorRampPalette(c("blue", "white", "red"))(200),
+  tl.col = "black",
+  tl.cex = 0.8,
+  title = "Correlation Heatmap",
+  mar = c(0, 0, 2, 0)
+)
+
+```
+
+### 2.5.3 Potential Influencing factors
+
+```{r}
+
+
+```
+
+The correlation matrix and heatmap provide insights into the numerical relationships between the converted variables.
+
+Based on the analyses:
+
+-   **Group-wise Obesity Rates:** Bar charts reveal differences in obesity rates by age, employment, and dietary habits stratified by sex.
+
+-   **Chi-square Tests:** The chi-square tests show which categorical factors are significantly associated with obesity.
+
+-   **Correlation Analysis:** The correlation matrix (and corresponding heatmap) provide additional insights into the linear relationships among the variables.
