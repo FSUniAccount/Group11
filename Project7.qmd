@@ -82,8 +82,23 @@ grid.arrange(
   layout_matrix = rbind(c(1, 2, 3), 
                         c(4, 5, 3)))
 
-```                
+```        
+## Obeaity changes over time (2008-2012)
+@tbl-yearly-obesity-rate present the yearly obesity rates in Scotland between 2008 and 2012.Overall, the obesity rate dropped to its lowest point in 2009 (28.79%), and then rose sharply in 2010, reaching its highest point in five years (30.47%). After that, the obesity rate fell back and stabilized in 2011-2012. The data shows that there were some fluctuations in the obesity rate during this period, but it generally remained between 29% and 30.5%.
+```{r}
+#| echo: false
+#| label: tbl-yearly-obesity-rate
+#| tbl-cap: Yearly Obesity Rate in Scotland from 2008 to 2012.
 
+yearly_rate <- data %>%
+  group_by(Year) %>%
+  summarise(ObesityRate = mean(Obese == "Yes") * 100)
+
+yearly_rate %>%
+  gt() %>%
+  tab_header(title = "Yearly Obesity Rate (2008-2012)") %>%
+  fmt_number(columns = ObesityRate, decimals = 2)
+```  
 ##Obesity trend over time (2008-2012)
 @fig-yearly-obesity shows the yearly trend of obesity rate in Scotland from 2008 to 2012.The trend shows that after the obesity rate fell in 2009, it rose significantly in 2010, and then gradually fell back and stabilized. The fluctuation in 2010 may reflect the increase in health risk factors that year, while the slowdown after 2011 may be related to health intervention measures and the improvement of awareness of physiological health management. Overall, the obesity rate shows periodic fluctuations, but remains at a relatively high level.
 
