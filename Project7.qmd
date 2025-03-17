@@ -1,10 +1,3 @@
----
-title: "Group 11"
-format: revealjs
-editor: visual
----
-
-
 ## 2.5 Variable Relationships
 
 In this section, we perform chi-square tests to assess the association between categorical variables and obesity status, and then compute a correlation matrix (and its heatmap) on a numeric copy of the data.
@@ -27,14 +20,13 @@ print(chi_p_values)
 
 ```
 
-The printed p-values indicate which factors are significantly associated with obesity status.
+Age group, employment status, and vegetable intake show significant associations with obesity, while sex and fruit intake do not reach statistical significance. These findings validate previous observations and highlight key influencing factors.
 
 ### 2.5.2 Correlation Analysis
 
 For the correlation analysis, we create a numeric copy of the data to convert categorical variables into numerical codes.
 
 ```{r}
-library(corrplot)
 
 # Create a numeric copy (do NOT overwrite the original df)
 df_num <- df
@@ -61,32 +53,84 @@ cor_matrix <- cor(df_cor, use = "pairwise.complete.obs")
 print(cor_matrix)
 
 # Plot the correlation heatmap
+# Improved correlation heatmap
 corrplot(
   cor_matrix,
   method = "color",
   type = "upper",
-  col = colorRampPalette(c("blue", "white", "red"))(200),
+  col = colorRampPalette(c("steelblue", "white", "firebrick"))(200),
+  addCoef.col = "black",
   tl.col = "black",
+  tl.srt = 45,
   tl.cex = 0.8,
+  diag = FALSE,
   title = "Correlation Heatmap",
   mar = c(0, 0, 2, 0)
 )
 
 ```
 
+Age shows the strongest correlation with obesity (r = 0.10), followed by employment status (r = 0.06), while vegetable intake is negatively correlated (r = -0.03). Sex and fruit intake exhibit near-zero correlations, aligning with chi-square results, reinforcing their weaker influence.
+
 ### 2.5.3 Potential Influencing factors
 
 ```{r}
+# Analyzing the significant factors from chi-square tests and correlation analysis
 
+# Create a data frame of chi-square p-values for visualization
+chi_results_df <- data.frame(
+  Variable = names(chi_p_values),
+  P_Value = chi_p_values,
+  Significant = chi_p_values < 0.05
+)
+
+ggplot(chi_results_df, aes(x = reorder(Variable, P_Value), y = P_Value, fill = Significant)) +
+  geom_bar(stat = "identity") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "firebrick") +
+  coord_flip() +
+  scale_fill_manual(values = c("grey", "steelblue")) +
+  theme_minimal() +
+  labs(
+    title = "Chi-square Test P-values for Association with Obesity",
+    x = "Variable",
+    y = "P-value",
+    caption = "Red dashed line indicates significance level (0.05)"
+  )
+
+# Identify top correlations with obesity
+obesity_correlations <- data.frame(
+  Variable = colnames(cor_matrix),
+  Correlation = cor_matrix[, "Obese"]
+) %>%
+  filter(Variable != "Obese") %>%
+  arrange(desc(abs(Correlation)))
+
+ggplot(obesity_correlations, aes(x = reorder(Variable, abs(Correlation)), 
+                                y = Correlation, 
+                                fill = Correlation > 0)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  scale_fill_manual(values = c("firebrick", "steelblue"), 
+                    labels = c("Negative", "Positive")) +
+  theme_minimal() +
+  labs(
+    title = "Correlations with Obesity Status",
+    x = "Variable",
+    y = "Correlation Coefficient",
+    fill = "Direction"
+  )
+
+# Combine the insights from both analyses
+cat("Based on the chi-square tests and correlation analysis, the following factors appear to have the strongest association with obesity status:\n")
+
+# Print the significant factors from chi-square tests
+sig_chi <- chi_results_df %>% filter(Significant == TRUE) %>% arrange(P_Value)
+cat("Significant factors (chi-square):", paste(sig_chi$Variable, collapse = ", "), "\n")
+
+# Print the top correlating factors
+top_corr <- obesity_correlations %>% filter(abs(Correlation) > 0.05) %>% arrange(desc(abs(Correlation)))
+cat("Top correlating factors:", paste(top_corr$Variable, collapse = ", "), "\n")
 
 ```
 
-The correlation matrix and heatmap provide insights into the numerical relationships between the converted variables.
-
-Based on the analyses:
-
--   **Group-wise Obesity Rates:** Bar charts reveal differences in obesity rates by age, employment, and dietary habits stratified by sex.
-
--   **Chi-square Tests:** The chi-square tests show which categorical factors are significantly associated with obesity.
-
--   **Correlation Analysis:** The correlation matrix (and corresponding heatmap) provide additional insights into the linear relationships among the variables.
+Age emerges as the most critical factor in obesity risk, followed by employment status and vegetable intake, while sex and fruit intake show weaker associations. The interaction between age and employment suggests socioeconomic factors play a key role in obesity prevalence.
