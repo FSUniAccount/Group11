@@ -1,90 +1,144 @@
 ---
-title: "Group 11"
-format: revealjs
-editor: visual
+title: "Data Analysis: Obesity Prevalence"
+number-sections: true
+format:
+  html:
+    embed-resources: true
+    code-tools: true
+execute: 
+  echo: false
+  eval: true
+editor_options: 
+  chunk_output_type: console
 ---
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+library(ggplot2)
+library(corrplot)
+library(tidyverse)
+library(gt)
+library(patchwork)
+library(gridExtra)
+library(knitr)
+library(kableExtra)
+library(dplyr)
+library(broom)
+library(MASS)
+library(gt)
+library(caret)
+library(ResourceSelection)
+library(pROC)
+library(car)
+```
 
 ## 2.4 Group-wise Obesity Rate Analysis
 
-In this section, we explore the obesity rates by various grouping variables (Age Group, Employment, Vegetable Intake, and Fruit Intake) stratified by Sex. The following code computes the obesity rates and generates bar charts.
-
-### 2.4.1 Obesity Rate by Age Group and Sex
+In this section, we explore the obesity rates by various grouping variables (Age Group, Employment, Vegetable Intake, and Fruit Intake) stratified by Sex. The following code computes the obesity rates and generates a 2x2 grid of bar charts.
 
 ```{r}
+#| warning: false
+#| message: false
 
-library(dplyr)
-library(ggplot2)
-
-# Read the dataset (update the path as needed)
-df <- read.csv("DAProject7.csv",
+df <- read.csv("D:/HuaweiMoveData/Users/13329/Desktop/DAProject7.csv",
                stringsAsFactors = TRUE)
 
-# Quick check of the structure
-str(df)
+# Create a function to calculate obesity rates
+calculate_obesity_rates <- function(data, group_var, group_name) {
+  grouped_data <- data %>%
+    group_by(!!sym(group_var), Sex) %>%
+    summarise(ObesityRate = mean(Obese == "Yes") * 100, .groups = "drop")
+  return(grouped_data)
+}
 
-# Compute obesity rates by AgeGroup and Sex
-grouped_obesity <- df %>%
-  group_by(AgeGroup, Sex) %>%
-  summarise(ObesityRate = mean(Obese == "Yes") * 100, .groups = "drop")
+# Calculate obesity rates for each grouping variable
+grouped_age        <- calculate_obesity_rates(df, "AgeGroup",     "Age Group")
+grouped_employment <- calculate_obesity_rates(df, "Employment",   "Employment")
+grouped_veg        <- calculate_obesity_rates(df, "Veg",          "Vegetable Intake")
+grouped_fruit      <- calculate_obesity_rates(df, "Fruit",        "Fruit Intake")
 
-# Plot obesity rate by Age Group and Sex
-ggplot(grouped_obesity, aes(x = AgeGroup, y = ObesityRate, fill = Sex)) +
-  geom_bar(stat = "identity", position = "dodge") +
+#=== Plot A: Age Group ===#
+p1 <- ggplot(grouped_age, aes(x = AgeGroup, y = ObesityRate, fill = Sex)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
   theme_minimal() +
-  ggtitle("Obesity Rate by Age Group and Sex") +
-  labs(y = "Obesity Rate (%)") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  labs(y = "Obesity Rate (%)", x = "Age Group") +
+  scale_fill_manual(values = c("Female" = "#FF4136", "Male" = "#0074D9")) +
+  theme(
+    axis.text.x  = element_text(angle = 45, hjust = 1, size = 9),
+    legend.position = "right",
+    plot.title   = element_text(size = 11, face = "bold"),
+    axis.title   = element_text(size = 10)
+  ) +
+  ggtitle("(A) by Age Group and Sex") +
+  ylim(0, 45)
+
+#=== Plot B: Employment (flip to avoid crowded x-axis) ===#
+p2 <- ggplot(grouped_employment, aes(x = Employment, y = ObesityRate, fill = Sex)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  coord_flip() +  # Flip coordinates to avoid a crowded x-axis
+  theme_minimal() +
+  labs(y = "Obesity Rate (%)", x = "Employment") +
+  scale_fill_manual(values = c("Female" = "#FF4136", "Male" = "#0074D9")) +
+  theme(
+    axis.text.x  = element_text(size = 9),
+    axis.text.y  = element_text(size = 9),
+    legend.position = "right",
+    plot.title   = element_text(size = 11, face = "bold"),
+    axis.title   = element_text(size = 10)
+  ) +
+  ggtitle("(B) by Employment") +
+  ylim(0, 45)
+
+#=== Plot C: Vegetable Intake ===#
+p3 <- ggplot(grouped_veg, aes(x = Veg, y = ObesityRate, fill = Sex)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  theme_minimal() +
+  labs(y = "Obesity Rate (%)", x = "Vegetable Intake") +
+  scale_fill_manual(values = c("Female" = "#FF4136", "Male" = "#0074D9")) +
+  theme(
+    axis.text.x  = element_text(size = 9),
+    legend.position = "right",
+    plot.title   = element_text(size = 11, face = "bold"),
+    axis.title   = element_text(size = 10)
+  ) +
+  ggtitle("(C) by Vegetable Intake and Sex") +
+  ylim(0, 45)
+
+#=== Plot D: Fruit Intake ===#
+p4 <- ggplot(grouped_fruit, aes(x = Fruit, y = ObesityRate, fill = Sex)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  theme_minimal() +
+  labs(y = "Obesity Rate (%)", x = "Fruit Intake") +
+  scale_fill_manual(values = c("Female" = "#FF4136", "Male" = "#0074D9")) +
+  theme(
+    axis.text.x  = element_text(size = 9),
+    legend.position = "right",
+    plot.title   = element_text(size = 11, face = "bold"),
+    axis.title   = element_text(size = 10)
+  ) +
+  ggtitle("(D) by Fruit Intake and Sex") +
+  ylim(0, 45)
+
+#=== Combine plots ===#
+# Use patchwork to arrange p1 and p2 in the top row, and p3 and p4 in the bottom row
+combined_plot <- (p1 + p2) / (p3 + p4) +
+  plot_layout(guides = "collect") & 
+  theme(legend.position = "bottom")
+
+# Add a main title to the entire plot
+combined_plot <- combined_plot + plot_annotation(
+  title = "Obesity Rates by Demographic and Lifestyle Factors",
+  theme = theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5))
+)
+
+#=== Adjust plot size and output ===#
+options(repr.plot.width = 12, repr.plot.height = 8)
+combined_plot
 
 ```
 
-### 2.4.2 Obesity Rate by Employment Status and Sex
+Age shows the most consistent pattern, with employment status exhibiting the widest variation, particularly for students and those unable to work. Vegetable intake correlates with lower obesity rates, whereas fruit intake shows little impact. Gender differences vary across factors, illustrating the complexity of obesity risk.
 
-```{r}
-# Compute obesity rates by Employment and Sex
-grouped_employment <- df %>%
-  group_by(Employment, Sex) %>%
-  summarise(ObesityRate = mean(Obese == "Yes") * 100, .groups = "drop")
-
-# Plot obesity rate by Employment Status and Sex
-ggplot(grouped_employment, aes(x = Employment, y = ObesityRate, fill = Sex)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  theme_minimal() +
-  ggtitle("Obesity Rate by Employment Status and Sex") +
-  labs(y = "Obesity Rate (%)") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-```
-
-### 2.4.3 Obesity Rate by Vegetable Intake and Sex
-
-```{r}
-# Compute obesity rates by Vegetable Intake (Veg) and Sex
-grouped_veg <- df %>%
-  group_by(Veg, Sex) %>%
-  summarise(ObesityRate = mean(Obese == "Yes") * 100, .groups = "drop")
-
-# Plot obesity rate by Vegetable Intake and Sex
-ggplot(grouped_veg, aes(x = Veg, y = ObesityRate, fill = Sex)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  theme_minimal() +
-  ggtitle("Obesity Rate by Vegetable Intake and Sex") +
-  labs(y = "Obesity Rate (%)")
-
-```
-
-### 2.4.4 Obesity Rate by Fruit Intake and Sex
-
-```{r}
-# Compute obesity rates by Fruit Intake and Sex
-grouped_fruit <- df %>%
-  group_by(Fruit, Sex) %>%
-  summarise(ObesityRate = mean(Obese == "Yes") * 100, .groups = "drop")
-
-# Plot obesity rate by Fruit Intake and Sex
-ggplot(grouped_fruit, aes(x = Fruit, y = ObesityRate, fill = Sex)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  theme_minimal() +
-  ggtitle("Obesity Rate by Fruit Intake and Sex") +
-  labs(y = "Obesity Rate (%)")
-
-```
