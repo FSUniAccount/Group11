@@ -16,7 +16,7 @@ library(dplyr)
 library(ggplot2)
 
 # Read the dataset (update the path as needed)
-df <- read.csv("D:/HuaweiMoveData/Users/13329/Desktop/DAProject7.csv",
+df <- read.csv("DAProject7.csv",
                stringsAsFactors = TRUE)
 
 # Quick check of the structure
