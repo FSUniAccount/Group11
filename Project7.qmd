@@ -1,11 +1,10 @@
 # Exploratory data analysis {#sec-eda}
 
-@fig-variable-distribution shows the distribution of key categorical variables, including Age Group, Sex, Employment status, Vegetable consumption, and Fruit consumption.The AgeGroup variable shows a skew toward middle-aged individuals, with a lower representation in younger and older age groups. The Sex distribution is relatively balanced, with a slight female predominance, which may influence obesity trends by gender. The Employment variable indicates a higher proportion of employed individuals, suggesting socio-economic factors may play a role in obesity prevalence. The Veg and Fruit consumption distributions highlight a concentration of individuals with low to moderate intake, with a significant proportion reporting infrequent or no consumption. This suggests dietary patterns that may contribute to higher obesity rates, especially when combined with other socio-economic factors.
-
+@fig-variable-distribution illustrates the distribution of key categorical variables in the dataset, including Age Group, Employment Status, Vegetable and Fruit Consumption, and Sex. Age Group (AgeGroup) distribution indicates that middle-aged individuals (35-64 years) constitute the largest proportion, while younger (16-24 years) and older (75+ years) groups have lower representation, with females slightly outnumbering males across most age groups. Employment Status (Employment) shows that females have a higher proportion in the employed category but also dominate in "looking after home/family" and "permanently unable to work" categories, reflecting gender differences in social roles. Vegetable (Veg) and Fruit (Fruit) consumption data reveal that most individuals report regular intake, with females exhibiting a higher proportion of consumption compared to males, potentially indicating gender-related differences in health behaviors. Sex (Sex) distribution suggests a slightly higher number of females than males in the dataset, though the overall distribution remains relatively balanced.
 ```{r}
 #| echo: false
 #| label: fig-variable-distribution
-#| fig-cap: Distribution of Age Group, Sex, Employment, Vegetable Consumption, and Fruit Consumption in the Dataset.
+#| fig-cap: Distribution of Age Group, Employment Status, Vegetable Consumption, Fruit Consumption, and Sex by Gender in the Dataset.
 #| fig-align: center
 #| fig-width: 8
 #| fig-height: 6
@@ -18,33 +17,33 @@ data <- data %>%
     Employment == "Looking for/intending to look for paid work" ~ "Unemployed",
     TRUE ~ Employment
   ))
-
-
-p1 <- ggplot(data, aes(x = AgeGroup)) +
-  geom_bar(fill = "skyblue") +
+p1 <- ggplot(data, aes(x = AgeGroup, fill = Sex)) +
+  geom_bar(position = "dodge") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-p2 <- ggplot(data, aes(x = Sex)) +
-  geom_bar(fill = "lightcoral") +
+p2 <- ggplot(data, aes(x = Sex, fill = Sex)) +
+  geom_bar() +
+  scale_fill_manual(values = c("Female" = "lightcoral", "Male" = "cyan3")) + 
   theme_minimal()
 
-p3 <- ggplot(data, aes(x = Employment)) +
-  geom_bar(fill = "lightgreen") +
+p3 <- ggplot(data, aes(x = Employment, fill = Sex)) +
+  geom_bar(position = "dodge") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-p4 <- ggplot(data, aes(x = Veg)) +
-  geom_bar(fill = "gold") +
+p4 <- ggplot(data, aes(x = Veg, fill = Sex)) +
+  geom_bar(position = "dodge") +
   theme_minimal()
 
-p5 <- ggplot(data, aes(x = Fruit)) +
-  geom_bar(fill = "plum") +
+p5 <- ggplot(data, aes(x = Fruit, fill = Sex)) +
+  geom_bar(position = "dodge") +
   theme_minimal()
 
 grid.arrange(
   p1, p2, p3, p4, p5,    
   layout_matrix = rbind(c(1, 2, 3), 
                         c(4, 5, 3)))
-```                                                    
+
+```                
 
