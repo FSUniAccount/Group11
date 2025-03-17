@@ -1,3 +1,40 @@
+---
+title: "Group 11 Analysis"
+number-sections: true
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+  pdf: default
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(ggplot2)
+library(tidyverse)
+library(gt)
+library(patchwork)
+library(gridExtra)
+library(knitr)
+library(kableExtra)
+library(dplyr)
+library(broom)
+library(MASS)
+library(gt)
+library(caret)
+library(ResourceSelection)
+library(pROC)
+library(car)
+```
+# Introduction{#sec-intro}
+Obesity is a significant public health concern, influenced by various socio-economic and lifestyle factors. This analysis uses data from the 2008-2012 Scottish Health Surveys to explore the relationship between demographic variables, lifestyle habits, and obesity prevalence in Scotland. The dataset includes information on age, gender, employment, dietary habits, and obesity status.
+The objective is to examine trends in obesity prevalence over the survey years and identify differences in obesity rates based on socio-economic and lifestyle factors. The findings will inform public health strategies aimed at addressing obesity.
+@sec-eda provides an exploratory analysis of the dataset, including trends in obesity across different groups. @sec-fda presents the results of a regression analysis, including model diagnostics to assess the model's fit and assumptions. Concluding remarks are in @sec-con.
+
 # Exploratory data analysis {#sec-eda}
 ## Distribution of each variable
 @fig-variable-distribution illustrates the distribution of key categorical variables in the dataset, including Age Group, Employment Status, Vegetable and Fruit Consumption, and Sex. Age Group (AgeGroup) distribution indicates that middle-aged individuals (35-64 years) constitute the largest proportion, while younger (16-24 years) and older (75+ years) groups have lower representation, with females slightly outnumbering males across most age groups. Employment Status (Employment) shows that females have a higher proportion in the employed category but also dominate in "looking after home/family" and "permanently unable to work" categories, reflecting gender differences in social roles. Vegetable (Veg) and Fruit (Fruit) consumption data reveal that most individuals report regular intake, with females exhibiting a higher proportion of consumption compared to males, potentially indicating gender-related differences in health behaviors. Sex (Sex) distribution suggests a slightly higher number of females than males in the dataset, though the overall distribution remains relatively balanced.
@@ -46,4 +83,5 @@ grid.arrange(
                         c(4, 5, 3)))
 
 ```                
+
 
