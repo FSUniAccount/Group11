@@ -1,5 +1,5 @@
 # Exploratory data analysis {#sec-eda}
-
+## Distribution of each variable
 @fig-variable-distribution illustrates the distribution of key categorical variables in the dataset, including Age Group, Employment Status, Vegetable and Fruit Consumption, and Sex. Age Group (AgeGroup) distribution indicates that middle-aged individuals (35-64 years) constitute the largest proportion, while younger (16-24 years) and older (75+ years) groups have lower representation, with females slightly outnumbering males across most age groups. Employment Status (Employment) shows that females have a higher proportion in the employed category but also dominate in "looking after home/family" and "permanently unable to work" categories, reflecting gender differences in social roles. Vegetable (Veg) and Fruit (Fruit) consumption data reveal that most individuals report regular intake, with females exhibiting a higher proportion of consumption compared to males, potentially indicating gender-related differences in health behaviors. Sex (Sex) distribution suggests a slightly higher number of females than males in the dataset, though the overall distribution remains relatively balanced.
 ```{r}
 #| echo: false
