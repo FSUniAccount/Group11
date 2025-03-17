@@ -1,4 +1,4 @@
-##Obestity trend over time (2008-2012)
+##Obesity trend over time (2008-2012)
 @fig-yearly-obesity shows the yearly trend of obesity rate in Scotland from 2008 to 2012.The trend shows that after the obesity rate fell in 2009, it rose significantly in 2010, and then gradually fell back and stabilized. The fluctuation in 2010 may reflect the increase in health risk factors that year, while the slowdown after 2011 may be related to health intervention measures and the improvement of awareness of physiological health management. Overall, the obesity rate shows periodic fluctuations, but remains at a relatively high level.
 
 ```{r}
