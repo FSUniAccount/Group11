@@ -1,19 +1,21 @@
 ---
-title: "Group 11"
+title: "Project 7"
 format: revealjs
 editor: visual
 ---
 
-## Quarto
+## Introduction
 
 Quarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see <https://quarto.org/docs/presentations/>.
 
-## Bullets
+## **Exploratory Analysis**
 
 When you click the **Render** button a document will be generated that includes:
 
 -   Content authored with markdown
 -   Output from executable code
+
+## **Formal Analysis**
 
 ## Code
 
@@ -23,4 +25,8 @@ When you click the **Render** button a presentation will be generated that inclu
 1 + 1
 ```
 
+<<<<<<< HEAD
+## **Conclusions**
+=======
 ## Test to check whether this works
+>>>>>>> 27219bff68f7234b60e2aec0ac29f45d479838f8
