@@ -439,9 +439,31 @@ aic_table <- data.frame(
 aic_table
 ```
 
-Based on this table, we can conclude the Stepwise model, with an AIC of 30078.14 is a better fit than the full model, with AIC of 30080.98. The Stepwise function has retained variables of AgeGroup, Sex, Employment and Veg, so the only removed variable is fruit.
+Based on this table, we can conclude the Stepwise model, with an AIC of 30078.14 is a better fit than the full model, with AIC of 30080.98. The Stepwise function has retained variables of AgeGroup, Sex, Employment and Veg, so the only removed variables are fruit and year.
 
+The full model regression will look like this:
 
+$y_i=\beta_0+\beta_1\cdot{Year}+\beta_2\cdot{AgeGroup}+\beta_3\cdot{Sex}+\beta_4\cdot{Employment}+\beta_5\cdot{Fruit}+\beta_6\cdot{Veg}$
+
+where
+
+-    $y_i$ is the Odds of being obese
+
+-   $\beta_0$ is the intercept of the model
+
+-   $\beta_1, . .., \beta_6$ are the coefficients of the corresponding variables
+
+The Stepwise model looks like this:
+
+$y_i=\beta_0+\beta_2\cdot{AgeGroup}+\beta_3\cdot{Sex}+\beta_4\cdot{Employment}+\beta_6\cdot{Veg}$
+
+where
+
+-    $y_i$ is the Odds of being obese
+
+-   $\beta_0$ is the intercept of the model
+
+-   $\beta_1,\beta_2,\beta_3,\beta_4 and \beta_5$ are the coefficients of the corresponding variables
 
 ```{r}
 #| echo: false
@@ -481,9 +503,7 @@ or_table_stepwise
 
 ```
 
-The odds ratio assesses how the odds of the dependent variable(Obese) change with a 1 unit change in the independent variable(AgeGroup, Sex, Employment, Veg). 
-The lower and Upper 95% Confidence Interval indicates the range in which the Odds Ratio will lie for each variable. 
-The P-Value tests the null hypothesis that the Odds Ratio is equal to 1. For all variables, the p-value < 0.05, meaning it is statistically significant. 
+The odds ratio assesses how the odds of the dependent variable(Obese) change with a 1 unit change in the independent variable(AgeGroup, Sex, Employment, Veg). The lower and Upper 95% Confidence Interval indicates the range in which the Odds Ratio will lie for each variable. The P-Value tests the null hypothesis that the Odds Ratio is equal to 1. For all variables, the p-value \< 0.05, meaning it is statistically significant.
 
 ```{r}
 
@@ -506,14 +526,12 @@ ggplot(odds_ratios_df, aes(x = reorder(Variable, OR), y = OR, ymin = LowerCI, ym
         plot.title = element_text(size = 14, face = "bold"))
 ```
 
-From this plot, we can see that the Odds Ratio increases as AgeGroup increases.
-Permanently unemployed have the highest Odds Ratio whereas the other employment status have very similar Odds Ratios around 1, apart from Full-time Education which has lowest Odds ratio.
-SexMale has an Odds ratio close to 1 and VegYes has an Odds Ratio of less than 1. 
-
+From this plot, we can see that the Odds Ratio increases as AgeGroup increases. Permanently unemployed have the highest Odds Ratio whereas the other employment status have very similar Odds Ratios around 1, apart from Full-time Education which has lowest Odds ratio. SexMale has an Odds ratio close to 1 and VegYes has an Odds Ratio of less than 1.
 
 ```{r}
 plot(model)
 ```
+
 ## Model Diagnostics & Evaluation
 
 ```{r}
