@@ -32,6 +32,8 @@ library(caret)
 library(ResourceSelection)
 library(pROC)
 library(car)
+library(performance)
+library(DHARMa)
 ```
 
 # Introduction {#sec-intro}
@@ -399,8 +401,181 @@ Age emerges as the most critical factor in obesity risk, followed by employment 
 
 ## Variable Selection & Regression Modelling
 
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| 
+data<- df
+data$Obese <- ifelse(data$Obese =="Yes", 1, 0)
+
+data$AgeGroup   <- as.factor(data$AgeGroup)
+data$sex <- as.factor(data$Sex) 
+data$employment <- as.factor(data$Employment) 
+data$fruit <- as.factor(data$Fruit) 
+data$veg <- as.factor(data$Veg)
+
+model <- glm(Obese ~ Year + AgeGroup + Sex + Employment + Fruit + Veg, 
+             data = data, family = binomial)
+
+summ1 <- summary(model)
+plot(model)
+
+predictions <- predict(model, type = "response")
+data$predicted_prob <- predictions
+head(data$predicted_prob)
+
+AIC(model)
+
+stepwise_model <- stepAIC(model, direction = "both", trace = 1)
+summ2 <- summary(stepwise_model)
+
+odds_ratios <- exp(coef(stepwise_model)) 
+conf_intervals <- exp(confint(stepwise_model))
+
+#odds_ratios 
+#conf_intervals
+
+model_summary <- summary(stepwise_model) 
+p_values <- model_summary$coefficients[, 4] 
+#p_values
+
+odds_ratios_df <- data.frame( Variable = names(odds_ratios), 
+                              OR = odds_ratios, 
+                              LowerCI = conf_intervals[, 1],
+                              UpperCI = conf_intervals[, 2] )
+
+odds_ratios_df <- odds_ratios_df %>% filter(Variable != "(Intercept)")
+
+ggplot(odds_ratios_df, aes(x = Variable, y = OR, ymin = LowerCI, ymax = UpperCI)) + geom_pointrange() + # Points with lines for the CIs 
+  geom_hline(yintercept = 1, linetype = "dashed", color = "pink") + # Reference line at OR = 1 
+  coord_flip() + # Flip the axes for better readability 
+  labs(x = "Variable", y = "Odds Ratio (95% CI)") + 
+  theme_minimal() + 
+  theme(axis.text.y = element_text(size = 12))
+```
+
+| Coefficients                                                       | Estimate   | Std. Error | z value | Pr(\>\|z\|)     |
+|--------------------------------------------------------------------|------------|------------|---------|-----------------|
+| (Intercept)                                                        | -9.4455065 | 20.9773716 | -0.450  | 0.652515        |
+| Year                                                               | 0.0040207  | 0.0104345  | 0.385   | 0.699993        |
+| AgeGroup: 25-34                                                    | 0.2905346  | 0.0792707  | 3.665   | 0.000247 \*\*\* |
+| AgeGroup: 35-44                                                    | 0.7118661  | 0.0755078  | 9.428   | \< 2e-16 \*\*\* |
+| AgeGroup: 45-54                                                    | 0.7732339  | 0.0752725  | 10.272  | \< 2e-16 \*\*\* |
+| AgeGroup: 55-64                                                    | 0.9751481  | 0.0771905  | 12.633  | \< 2e-16 \*\*\* |
+| AgeGroup: 65-74                                                    | 0.9536306  | 0.0898307  | 10.616  | \< 2e-16 \*\*\* |
+| AgeGroup: 75+                                                      | 0.6432094  | 0.0985387  | 6.527   | 6.69e-11 \*\*\* |
+| SexMale                                                            | -0.0463063 | 0.0288692  | -1.604  | 0.108713        |
+| Employment: In full-time education                                 | -0.6499833 | 0.1710072  | -3.801  | 0.000144 \*\*\* |
+| Employment: In paid employment, self-employed or on gov't training | -0.0172654 | 0.1353190  | -0.128  | 0.898473        |
+| Employment: Looking after home/family                              | -0.0278140 | 0.1456978  | -0.191  | 0.848603        |
+| Employment: Looking for/intending to look for paid work            | 0.0009539  | 0.1574827  | 0.006   | 0.995167        |
+| Employment: Perm unable to work                                    | 0.2800048  | 0.1476789  | 1.896   | 0.057955        |
+| Employment: Retired                                                | 0.0006616  | 0.1418566  | 0.005   | 0.996279        |
+| Fruit: Yes                                                         | -0.0316488 | 0.0316202  | -1.001  | 0.316873        |
+| Veg: Yes                                                           | -0.1930594 | 0.0342967  | -5.629  | 1.81e-08 \*\*\* |
+
 ## Model Diagnostics & Evaluation
 
-# Conclusions {#sec-con}
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| 
+stepwise_model <- stepAIC(model, direction = "both", trace = 0)
 
-# References
+```
+
+### Overdispersion Check
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+# 1. Overdispersion Check
+check_overdispersion(stepwise_model)
+#No Overdispersion detected means that the standard errors of the model's coefficients have not been underestimated
+#Overdispersion can lead to type I errors.
+
+```
+
+No Overdispersion means that the standard errors of the model's coefficients have not been underestimated. Overdispersion can lead to type I errors
+
+### Check Outliers & Cooks Distance
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| 
+
+#check_outliers(stepwise_model)
+
+cooks_distance <- cooks.distance(stepwise_model)
+plot(cooks_distance, type = "h", main = "Cook's Distance")
+abline(h = 4 / length(cooks_distance), col = "red") # Threshold
+
+```
+
+We cannot check outliers on the stepwise model as we only have factor, and not numerical data Therefore we use cook's distance, and because few datapoints are far from the line threshold, there are no overly influential outliers.
+
+### Check Normality
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| 
+
+check_normality(residuals(stepwise_model, type = "deviance"))
+```
+
+This checks if the deviance residuals follow a normal distribution. Because p \< 0.001 there is strong evidence against the null hypothesis of normality. This is fine; in logistic regression, the normality of deviance residuals is not a primary assumption.
+
+### Deviance Graphs
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| 
+
+hist(residuals(stepwise_model, type = "deviance"), main = "Histogram of Deviance Residuals")
+qqnorm(residuals(stepwise_model, type = "deviance"), main = "Q-Q Plot of Deviance Residuals")
+qqline(residuals(stepwise_model, type = "deviance"))
+```
+
+These show clear patterns in the deviances, that there are two clear sections of data.
+
+### Check Collinearity
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| 
+
+check_collinearity(stepwise_model)
+
+```
+
+The colliearity check, returns low correlation, which is good, as we don't want high correlation between predictor variables.
+
+### Hoslem Test
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| 
+
+library(ResourceSelection)
+predicted_probabilities <- predict(stepwise_model, type = "response")
+hoslem.test(data$Obese, predicted_probabilities)
+
+```
+
+The P value (0.1315) is much greater than 0.05, and therefore there is not enough evidence to reject the null hypothesis that the model fits the data: ie. that our model reasonably fits the data.
+
+# Conclusions {#sec-con}
