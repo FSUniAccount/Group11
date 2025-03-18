@@ -404,6 +404,3 @@ Age emerges as the most critical factor in obesity risk, followed by employment 
 # Conclusions {#sec-con}
 
 # References
-
-# 
-
