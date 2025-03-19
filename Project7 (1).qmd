@@ -447,7 +447,7 @@ $y_i=\beta_0+\beta_1\cdot{Year}+\beta_2\cdot{AgeGroup}+\beta_3\cdot{Sex}+\beta_4
 
 where
 
--    $y_i$ is the Odds of being obese
+-   $y_i$ is the Odds of being obese
 
 -   $\beta_0$ is the intercept of the model
 
@@ -459,7 +459,7 @@ $y_i=\beta_0+\beta_2\cdot{AgeGroup}+\beta_3\cdot{Sex}+\beta_4\cdot{Employment}+\
 
 where
 
--    $y_i$ is the Odds of being obese
+-   $y_i$ is the Odds of being obese
 
 -   $\beta_0$ is the intercept of the model
 
