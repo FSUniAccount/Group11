@@ -8,6 +8,8 @@ format:
 execute: 
   echo: false
   eval: true
+  warning: false
+  message: false
 editor_options: 
   chunk_output_type: console
 ---
@@ -32,6 +34,7 @@ library(caret)
 library(ResourceSelection)
 library(pROC)
 library(car)
+library(performance)
 ```
 
 # Introduction {#sec-intro}
@@ -244,7 +247,7 @@ combined_plot
 
 3.  Obesity Rate by Vegetable Intake and Sex: Higher vegetable intake is associated with lower obesity rates for both sexes, with a stronger effect in females (from 33.4% to 28.9%). This suggests a protective role of vegetable consumption against obesity, reinforcing the importance of dietary habits in obesity prevention.
 
-4.  Obesity Rate by Fruit Intake and Sex:Unlike vegetables, fruit intake shows minimal association with obesity, as obesity rates remain nearly unchanged regardless of fruit consumption (29.9% vs. 29.8% for females, 28.9% vs. 29.6% for males). This highlights potential differences in how various dietary components impact obesity.
+4.  Obesity Rate by Fruit Intake and Sex:Unlike vegetables, fruit intake shows minimal association with obesity, as obesity rates remain nearly unchanged regardless of fruit consumption (29.9% vs. 29.8% for females, 28.9% vs. 29.6% for males). This highlights potential differences in how various dietary components impact obesity.
 
 Age shows the most consistent pattern, with employment status exhibiting the widest variation, particularly for students and those unable to work. Vegetable intake correlates with lower obesity rates, whereas fruit intake shows little impact. Gender differences vary across factors, illustrating the complexity of obesity risk.
 
@@ -399,11 +402,357 @@ Age emerges as the most critical factor in obesity risk, followed by employment 
 
 ## Variable Selection & Regression Modelling
 
+In this analysis, the primary objective is to understand the relationship between various socio-economic and lifestyle factors and the likelihood of an individual being obese. We will employ a logistic regression model where the response variable is Obese (Yes/No), and the predictors include Year, AgeGroup, Sex, Employment, Veg, and Fruit.
+
+We start by fitting the full logistic regression model containing all explanatory variables, which can be written as:
+
+$$
+\begin{aligned}
+y_i &= \beta_0 + \beta_1 \cdot x_{1i} + \beta_2 \cdot x_{2i} + \beta_3 \cdot x_{3i} + \beta_4 \cdot x_{4i} + \beta_5 \cdot x_{5i} + \beta_6 \cdot x_{6i} \\
+    &= \beta_0 + \beta_{\text{Year}} \cdot \text{Year} + \beta_{\text{AgeGroup}} \cdot \text{AgeGroup} + \beta_{\text{Sex}} \cdot \text{Sex}+ \beta_{\text{Employment}} \cdot \text{Employment} + \beta_{\text{Fruit}} \cdot \text{Fruit} + \beta_{\text{Veg}} \cdot \text{Veg}
+\end{aligned}
+$$
+
+where
+
+-   $y_i$ denotes the log-odds of obesity for individual $i$,
+
+-   $\beta_0$ is the intercept, representing the baseline log-odds of obesity,
+
+-   $\beta_{\text{Year}}$,$\beta_{\text{AgeGroup}}$, $\beta_{\text{Sex}}$, $\beta_{\text{Employment}}$,$\beta_{\text{Fruit}}$ and $\beta_{\text{Veg}}$ are the regression coefficients for the corresponding explanatory variables, indicating the change in log-odds of obesity for each unit change in the respective variable.
+
+Stepwise regression with backward selection will be used to determine whether the full model can be reduced based on the Akaike information criterion (AIC). Hence, the model which results in the lowest AIC will result in the final model fitted to the data. Based on @tbl-aic-summary, we can conclude the stepwise Logistic Regression model, with an AIC of 30078.14 is a better fit than the full model, with AIC of 30080.98. The Stepwise function has retained variables of AgeGroup, Sex, Employment and Veg, so the only removed variables are fruit and year.
+
+```{r}
+#| echo: false
+#| label: tbl-aic-summary
+#| tbl-cap: AIC comparison between full and stepwise logistic regression models with retained variables. 
+    
+df <- read.csv("D:/HuaweiMoveData/Users/13329/Desktop/DAProject7.csv", stringsAsFactors = TRUE)
+data <- df
+
+data$Obese <- ifelse(data$Obese == "Yes", 1, 0)
+data$Sex <- as.factor(data$Sex)
+data$Employment <- as.factor(data$Employment)
+data$Fruit <- as.factor(data$Fruit)
+data$Veg <- as.factor(data$Veg)
+
+
+model <- glm(Obese ~ Year + AgeGroup + Sex + Employment + Fruit + Veg, 
+             data = data, 
+             family = binomial)
+
+full_model_aic <- AIC(model)
+
+stepwise_model <- stepAIC(model, direction = "both", trace = 1)
+stepwise_model_aic <- AIC(stepwise_model)
+
+retained_variables <- labels(terms(stepwise_model)) 
+retained_summary <- ifelse(length(retained_variables) > 0, 
+                           paste(retained_variables, collapse = ", "), 
+                           "None")
+
+
+aic_table <- data.frame(
+  Model = c("Full Model", "Stepwise Model"),
+  AIC = c(full_model_aic, stepwise_model_aic),
+  Retained_Variables = c("All", retained_summary)
+) %>%
+  gt() %>%
+  tab_header(title = "AIC Comparison and Retained Variables")
+aic_table
+
+```
+
+@tbl-stepwise-coeff presents the regression coefficients, standard errors, z-values, and p-values for each variable category in the stepwise logistic regression model, assessing the statistical significance and impact of different variable on the odds of obesity.
+
+```{r}
+#| echo: false
+#| label: tbl-stepwise-coeff
+#| tbl-cap: Stepwise logistic regression model coefficients by variable.
+
+model_summary <- summary(stepwise_model)
+
+coefficients <- model_summary$coefficients[, 1]
+
+std_errors <- model_summary$coefficients[, 2]
+z_values <- model_summary$coefficients[, 3]
+p_values <- model_summary$coefficients[, 4]
+
+coefficients_df <- data.frame(
+  Variable = rownames(model_summary$coefficients),
+  Coefficient = coefficients,
+  StdError = std_errors,
+  ZValue = z_values,
+  PValue = p_values
+)
+
+coefficients_df <- coefficients_df %>%
+  mutate(
+    Category = case_when(
+       Variable == "(Intercept)" ~ "Intercept",
+      str_detect(Variable, "AgeGroup") ~ "Age Group",
+      str_detect(Variable, "Employment") ~ "Employment Status",
+      Variable == "SexMale" ~ "Sex",
+      Variable == "VegYes" ~ "Veg"
+    )
+  )
+
+summary_df <- coefficients_df %>%
+  group_by(Category) %>%
+  summarise(
+    Coefficient = mean(Coefficient, na.rm = TRUE), 
+    StdError = mean(StdError, na.rm = TRUE),
+    ZValue = mean(ZValue, na.rm = TRUE),
+    PValue = min(PValue, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+summary_df <- summary_df %>%
+  gt() %>%
+  tab_header(title = "Stepwise Logistic Regression Model Coefficients by variable") %>%
+  fmt_number(columns = c("Coefficient", "StdError", "ZValue"), decimals = 3) %>%
+  fmt(columns = "PValue", fns = function(x) formatC(x, format = "e", digits = 3)) %>%
+  cols_label(
+    Category = "Variable Category",
+    Coefficient = "Regression Coefficient (β)",
+    StdError = "Standard Error",
+    ZValue = "Z-Value",
+    PValue = "P-Value"
+  )
+
+summary_df
+
+
+```
+
+Hence, from @tbl-stepwise-coeff we obtain the Stepwise logistic regression model looks like this:
+
+$$
+\begin{aligned}
+y_i &= \beta_0 + \beta_{\text{AgeGroup}} \cdot \text{AgeGroup} + \beta_{\text{Sex}} \cdot \text{Sex} + \beta_{\text{Employment}} \cdot \text{Employment} + \beta_{\text{Veg}} \cdot \text{Veg} \\
+    &= -1.372 + 0.719 \cdot \text{AgeGroup} - 0.044 \cdot \text{Sex} - 0.072 \cdot \text{Employment} - 0.199 \cdot \text{Veg}
+\end{aligned}
+$$ @tbl-stepwise show the detailed results of the stepwise logistic regression.The odds ratio assesses how the odds of the dependent variable(Obese) change with a 1 unit change in the independent variable(AgeGroup, Sex, Employment, Veg). The lower and Upper 95% Confidence Interval indicates the range in which the Odds Ratio will lie for each variable. The P-Value tests the null hypothesis that the Odds Ratio is equal to 1. For all variables, the p-value \< 0.05, meaning it is statistically significant.
+
+```{r}
+#| echo: false
+#| label: tbl-stepwise
+#| tbl-cap: "Stepwise Logistic Regression Results: Odds Ratios and Confidence Intervals for Obesity Prevalence."
+
+
+model_summary <- summary(stepwise_model)
+p_values <- model_summary$coefficients[,4]
+
+odds_ratios <- exp(coef(stepwise_model))
+conf_intervals <- exp(confint(stepwise_model))
+
+odds_ratios_t <- data.frame(
+  Statistic = c("Odds Ratio", "Lower 95% CI", "Upper 95% CI", "P-Value")
+)
+
+for (var_name in names(odds_ratios)) {
+  odds_ratios_t[[var_name]] <- c(
+    odds_ratios[var_name],
+    conf_intervals[var_name, 1],
+    conf_intervals[var_name, 2],
+    p_values[var_name]
+  )
+}
+
+or_table_stepwise <- odds_ratios_t %>%
+  gt() %>%
+  tab_header(title = "Stepwise Logistic Regression Results: Odds Ratios, Confidence Intervals, and P-Values") %>%
+  fmt_number(columns = -1, rows = 1:3, decimals = 3) %>%
+  fmt(columns = -1, rows = 4, fns = function(x) formatC(x, format = "e", digits = 3))
+
+or_table_stepwise
+
+```
+
+@fig-forest-plot illustrates the impact of various factors on obesity prevalence. The results show that the older the age, the higher the risk of obesity, especially in the 55-74 age group, where the risk is highest. Unemployed or inactive individuals have a higher likelihood of obesity, while full-time students have the lowest obesity risk. Additionally, vegetarians have a lower risk of obesity, suggesting that dietary habits play an important role in obesity development. Gender does not have a significant effect on obesity, with males having an odds ratio close to 1. Overall, age, employment status, and dietary habits are the main factors influencing obesity, while gender has a weaker effect.
+
+```{r}
+#| echo: false
+#| label: fig-forest-plot
+#| fig-cap: Forest plot of Odds Ratios from the Stepwise Logistic Regression model with 95% confidence intervals.
+#| fig-align: center
+#| fig-width: 6
+#| fig-height: 4
+#| theme: minimal
+
+
+or_table_stepwise <- broom::tidy(stepwise_model, exponentiate = TRUE, conf.int = TRUE)
+
+
+or_table_stepwise <- or_table_stepwise[, c("term", "estimate", "conf.low", "conf.high", "p.value")]
+colnames(or_table_stepwise) <- c("Term", "OR", "2.5% CI", "97.5% CI", "P-value")
+
+
+or_table_stepwise$Term <- factor(or_table_stepwise$Term, levels = rev(or_table_stepwise$Term))
+
+
+ggplot(or_table_stepwise, aes(x = OR, y = Term)) +
+  geom_point(size = 3, color = "steelblue") +
+  geom_errorbarh(aes(xmin = `2.5% CI`, xmax = `97.5% CI`), height = 0.3, color = "steelblue") +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "gray") +
+  labs(x = "Odds Ratio (95% CI)",
+       y = "Variable") +
+  theme_minimal(base_size = 12)
+```
+
 ## Model Diagnostics & Evaluation
 
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| 
+stepwise_model <- stepAIC(model, direction = "both", trace = 0)
+
+```
+
+### Check Outliers & Cook's Distance
+
+```{r}
+#| echo: false
+#| label: fig-cooks-distance
+#| fig-cap: Cook's Distance for Identifying Influential Observations.
+#| fig-align: center
+#| fig-width: 8
+#| fig-height: 6
+
+cooks_distance <- cooks.distance(stepwise_model)
+plot(cooks_distance, type = "h", main = "Cook's Distance")
+abline(h = 4 / length(cooks_distance), col = "red") 
+
+```
+
+We cannot check outliers on the stepwise model as we only have factor, and not numerical data Therefore we use cook's distance, and because few datapoints are far from the line threshold, there are no overly influential outliers.
+
+### Check Collinearity (VIF Check)
+
+```{r}
+#| echo: false
+#| label: tbl-vif-values
+#| tbl-cap: Variance Inflation Factor (VIF) for stepwise logistic regression Model Predictors.
+
+vif_results <- check_collinearity(stepwise_model)
+
+gt(vif_results) %>%
+  tab_header(
+    title = "Variance Inflation Factors (VIF)",
+    subtitle = "Multicollinearity Check"
+  ) %>%
+  fmt_number(columns = 2, decimals = 2)
+
+```
+
+The colliearity check, returns low correlation, which is good, as we don't want high correlation between predictor variables.
+
+### Goodness of Fit (Hosmer-Lemeshow Test)
+
+```{r}
+#| echo: false
+#| label: tbl-hoslem-test
+#| tbl-cap: Hosmer-Lemeshow Test for stepwise logistic regression Model Fit.
+
+predicted_probabilities <- predict(stepwise_model, type = "response")
+hoslem_result <- hoslem.test(data$Obese, predicted_probabilities)
+
+hoslem_summary <- data.frame(
+  Statistic = "Chi-squared",
+  Value = round(hoslem_result$statistic, 3),
+  df = hoslem_result$parameter,
+  p_value = round(hoslem_result$p.value, 3)
+)
+
+hoslem_summary %>%
+  gt() %>%
+  tab_header(title = "Hosmer-Lemeshow Test Results") %>%
+  fmt_number(columns = 2:4, decimals = 4) %>%
+  cols_label(Statistic = "Test Statistic", Value = "Value", df = "Degrees of Freedom", p_value = "P-value") %>%
+  tab_options(table.font.size = "small")
+
+```
+
+The P value (0.1320) is much greater than 0.05, and therefore there is not enough evidence to reject the null hypothesis that the model fits the data: ie. that our model reasonably fits the data.
+
+### Deviance Graphs
+
+```{r}
+#| echo: false
+#| fig-cap: Histogram of Deviance Residuals for stepwise logistic regression Model
+#| label: fig-deviance-hist
+#| fig-align: center
+#| fig-width: 5
+#| fig-height: 4
+
+hist(residuals(stepwise_model, type = "deviance"), main = "Histogram of Deviance Residuals")
+
+```
+
+These show clear patterns in the deviances, that there are two clear sections of data.
+
+### ROC Curve & AUC
+
+```{r}
+#| echo: false
+#| fig-cap: ROC Curve for stepwise logistic regression Model with AUC
+#| label: fig-roc-curve
+#| fig-align: center
+#| fig-width: 5
+#| fig-height: 4
+
+predicted_prob <- predict(stepwise_model, type = "response")
+roc_curve <- roc(data$Obese, predicted_prob) 
+
+plot(roc_curve, col = "blue", lwd = 2, main = "ROC Curve (Stepwise Model)",
+     xlab = "False Positive Rate (1 - Specificity)", 
+     ylab = "True Positive Rate (Sensitivity)")
+
+
+legend("topleft",legend = paste("AUC =", round(auc(roc_curve), 3)), 
+       col = "blue", lwd = 2, box.lty = 0)  
+
+```
+
+### Confusion Matrix & Accuracy
+
+```{r}
+#| echo: false
+#| label: tbl-accuracy
+#| tbl-cap: Confusion Matrix and Accuracy for stepwise logistic regression Model.
+
+
+data <- read.csv("DAProject7.csv", na.strings = c("", "NA"))
+data$Obese <- factor(data$Obese, levels = c("No", "Yes"), labels = c("Not Obese", "Obese"))
+
+predicted_probabilities <- predict(stepwise_model, type = "response")
+
+threshold <- 0.4  
+predicted_classes <- ifelse(predicted_probabilities > threshold, "Obese", "Not Obese")
+predicted_classes <- factor(predicted_classes, levels = c("Not Obese", "Obese"))
+
+conf_matrix <- confusionMatrix(predicted_classes, factor(data$Obese, levels = c("Not Obese", "Obese")))
+
+cm_table <- as.data.frame(conf_matrix$table)
+colnames(cm_table) <- c("Predicted Class", "Actual Class", "Count")
+
+accuracy <- round(conf_matrix$overall["Accuracy"], 4)
+
+cm_table %>%
+  gt() %>%
+  tab_header(title = "Confusion Matrix for Stepwise Model") %>%
+  cols_label(`Predicted Class` = "Predicted Class", 
+             `Actual Class` = "Actual Class", 
+             `Count` = "Count") %>%
+  fmt_number(columns = "Count", decimals = 0) %>%
+  tab_source_note(md(paste0("**Model Accuracy:** ", accuracy)))
+
+
+
+
+```
+
 # Conclusions {#sec-con}
-
-# References
-
-# 
-
