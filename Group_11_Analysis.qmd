@@ -613,7 +613,7 @@ stepwise_model <- stepAIC(model, direction = "both", trace = 0)
 ```
 
 ### Check Outliers & Cook's Distance
-
+@fig-cooks-distance presents Cook’s Distance, which assesses the influence of individual observations on the Stepwise Logistic Regression model estimates. The plot shows that most observations have low Cook’s Distance values, with no apparent extreme outliers or highly influential points. This suggests that the model’s fit is not significantly affected by any single observation, indicating good overall robustness.
 ```{r}
 #| echo: false
 #| label: fig-cooks-distance
@@ -628,10 +628,9 @@ abline(h = 4 / length(cooks_distance), col = "red")
 
 ```
 
-We cannot check outliers on the stepwise model as we only have factor, and not numerical data Therefore we use cook's distance, and because few datapoints are far from the line threshold, there are no overly influential outliers.
 
 ### Check Collinearity (VIF Check)
-
+@tbl-vif-values presents the Variance Inflation Factors (VIF) to assess multicollinearity among the predictor variables. The VIF values for all variables are below 5, indicating no severe multicollinearity issues. However, AgeGroup (VIF = 3.68) and Employment (VIF = 3.82) show relatively higher values compared to other predictors, suggesting a moderate correlation with other variables. The tolerance values further confirm that multicollinearity is not a significant concern in this model.
 ```{r}
 #| echo: false
 #| label: tbl-vif-values
@@ -648,10 +647,9 @@ gt(vif_results) %>%
 
 ```
 
-The colliearity check, returns low correlation, which is good, as we don't want high correlation between predictor variables.
 
-### Goodness of Fit (Hosmer-Lemeshow Test)
-
+### Hosmer-Lemeshow Test
+@tbl-hoslem-test assesses the goodness-of-fit for logistic regression models. The chi-squared statistic is 12.468 with 8 degrees of freedom, and the p-value (0.1320) is much greater than 0.05. This indicates insufficient evidence to reject the null hypothesis, suggesting that the model provides a reasonable fit to the data.
 ```{r}
 #| echo: false
 #| label: tbl-hoslem-test
@@ -676,26 +674,8 @@ hoslem_summary %>%
 
 ```
 
-The P value (0.1320) is much greater than 0.05, and therefore there is not enough evidence to reject the null hypothesis that the model fits the data: ie. that our model reasonably fits the data.
-
-### Deviance Graphs
-
-```{r}
-#| echo: false
-#| fig-cap: Histogram of Deviance Residuals for stepwise logistic regression Model
-#| label: fig-deviance-hist
-#| fig-align: center
-#| fig-width: 5
-#| fig-height: 4
-
-hist(residuals(stepwise_model, type = "deviance"), main = "Histogram of Deviance Residuals")
-
-```
-
-These show clear patterns in the deviances, that there are two clear sections of data.
-
 ### ROC Curve & AUC
-
+@fig-roc-curve evaluates the discriminative ability of the stepwise logistic regression model. The area under the curve (AUC) is 0.587, which is only slightly better than random chance (AUC = 0.5). This suggests that the model has weak predictive performance, indicating that further refinement, such as feature selection or alternative modeling approaches, may be necessary to improve classification accuracy.
 ```{r}
 #| echo: false
 #| fig-cap: ROC Curve for stepwise logistic regression Model with AUC
@@ -718,7 +698,7 @@ legend("topleft",legend = paste("AUC =", round(auc(roc_curve), 3)),
 ```
 
 ### Confusion Matrix & Accuracy
-
+@tbl-confusion-accuracy evaluates the classification performance of the stepwise logistic regression model. The overall accuracy is 67.33%, indicating a moderate predictive ability. However, the model exhibits a high false negative rate, misclassifying 6,262 obese individuals as not obese. This suggests that while the model performs relatively well in identifying non-obese individuals, its ability to correctly classify obesity cases is limited. The imbalance in misclassification may impact its practical utility in applications requiring accurate obesity detection.
 ```{r}
 #| echo: false
 #| label: tbl-accuracy
@@ -730,7 +710,7 @@ data$Obese <- factor(data$Obese, levels = c("No", "Yes"), labels = c("Not Obese"
 
 predicted_probabilities <- predict(stepwise_model, type = "response")
 
-threshold <- 0.4  
+threshold <- 0.35  
 predicted_classes <- ifelse(predicted_probabilities > threshold, "Obese", "Not Obese")
 predicted_classes <- factor(predicted_classes, levels = c("Not Obese", "Obese"))
 
