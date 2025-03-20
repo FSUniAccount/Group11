@@ -757,3 +757,4 @@ cm_table %>%
 
 # Conclusions {#sec-con}
 
+This study examined the prevalence of obesity in Scotland from 2008 to 2012, analyzing its association with socio-economic and lifestyle factors. The exploratory analysis revealed that obesity rates fluctuated over time but remained consistently high, with variations across demographic and behavioral groups. The stepwise logistic regression model identified age, employment status, and vegetable intake as significant predictors of obesity, while gender had a weaker influence. Model diagnostics confirmed a reasonable fit, but the predictive performance was limited, with a high false negative rate and an AUC of 0.587. These findings highlight the complexity of obesity determinants and suggest that targeted public health interventions should focus on high-risk groups, particularly older adults and those with socio-economic disadvantages, while promoting healthier dietary habits.
