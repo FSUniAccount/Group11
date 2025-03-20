@@ -757,32 +757,4 @@ cm_table %>%
 
 # Conclusions {#sec-con}
 
-Our analysis investigated the prevalance of obesity in scotland from 2008-2012, using data from the Scottish Health Survey.
-
-## How has the prevalance of obesity changed over the given years?
-
- - The Overall obesity rate exhibited fluctuations during the time period, with a notable peak in 2010, but has remaind consistently at about 29.5% of the population, with no indication of a trend away from that figure.
-
-## How do certain factors effect obesity levels?
-
- - Age: Age was a significant predictor of obesity, with prevalance increasing through middle aged people (55-64 years) and then decreasing later in life; This pattern likely reflects the age-related physiological changes and lifestyle shifts.
- - Employment Status: Employment status was also a significant obesity predictor; Indivuals out of work exhibited the highest obesity rates, while students had the lowest. This indicates a socioeconomic factor in obesity risk.
- - Gender: Gender was shown in the initial analysis to have some effect on groupings of other variables, however the final regression model showed that gender was not a statistically significnt independant predictor of obesity. 
- - Veg Intake: Higher veg intake was associated with a lower obesity rate, suggesting benifits in some dietary choices.
- - Fruit intake: Fruit intake showed minimal association with obesity, indicating that not all dietary choices impact obesity evenly.
-
-## Validity of Conclusions and Model Evaluation
-
- - Model Fit: The stepwise logistic regression model, selected based on AIC, demonstrated a reasonable fit on the data. Evidence of this is the Hosmer-Lemeshow test (p=0.132).
- - MultiCollinearity: VIF analysis indicated minimal multicollinearity among the predictor variables: robust regression results.
- - Outliers: Cook's distance showed no overly influential outliers: model not influenced by extreme data points.
- - Deviance Graphs and ROC curve: The deviance graphs showed clear patterns within the data, and the ROC curve, along with the AUC, gave further information about the model's ability to predict obesity.
-
-##Limitations and future work
-
- - The study was very limited to just data from 2008-2012, ideally having a larger data set would allow us both a more up to date understanding of obesity here, but also hopefully a more detailed model.
- - The dataset only contained categorical predictor variables, some numeric one's could be very helpful, such as waist curcumference or daily excercise time.
- - Further investigation into the interaction of some of the predictors could help with generatina a better model, for example the relationship between age and employment status.
- - Future reasearch could ake into account other factors, such as physical activity levels, genetic conditions, family members weight, and access to healthcare systems.
-
-In conclusion, this analysis provides a very valuable insight into the prevalance of obesity in scotland, and its associated factors. The finding underpin the importance of addressing some of the socioeconomic factors affecting the population and highlight the need to promote healthy dietary habits to fight obesity. Future research would hopefully build on these finding to develope more effective public heath systems.
+This study examined the prevalence of obesity in Scotland from 2008 to 2012, analyzing its association with socio-economic and lifestyle factors. The exploratory analysis revealed that obesity rates fluctuated over time but remained consistently high, with variations across demographic and behavioral groups. The stepwise logistic regression model identified age, employment status, and vegetable intake as significant predictors of obesity, while gender had a weaker influence. Model diagnostics confirmed a reasonable fit, but the predictive performance was limited, with a high false negative rate and an AUC of 0.587. These findings highlight the complexity of obesity determinants and suggest that targeted public health interventions should focus on high-risk groups, particularly older adults and those with socio-economic disadvantages, while promoting healthier dietary habits.
