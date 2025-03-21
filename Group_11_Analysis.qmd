@@ -49,7 +49,7 @@ The objective is to examine trends in obesity prevalence over the survey years a
 
 ## Distribution of each variable
 
-@fig-variable-distribution illustrates the distribution of key categorical variables in the dataset, including Age Group, Employment Status, Vegetable and Fruit Consumption, and Sex. Age Group (AgeGroup) distribution indicates that middle-aged individuals (35-64 years) constitute the largest proportion, while younger (16-24 years) and older (75+ years) groups have lower representation, with females slightly outnumbering males across most age groups. Employment Status (Employment) shows that females have a higher proportion in the employed category but also dominate in "looking after home/family" and "permanently unable to work" categories, reflecting gender differences in social roles. Vegetable (Veg) and Fruit (Fruit) consumption data reveal that most individuals report regular intake, with females exhibiting a higher proportion of consumption compared to males, potentially indicating gender-related differences in health behaviors. Sex (Sex) distribution suggests a slightly higher number of females than males in the dataset, though the overall distribution remains relatively balanced.
+@fig-variable-distribution illustrates the distribution of key categorical variables in the dataset, including Age Group, Employment Status, Vegetable and Fruit Consumption, and Sex. Age Group distribution indicates that middle-aged individuals (35-64 years) constitute the largest proportion, while younger (16-24 years) and older (75+ years) groups have lower representation, with females slightly outnumbering males across most age groups. Employment Status shows that females have a higher proportion in the employed category but also dominate in "looking after home/family" and "permanently unable to work" categories, reflecting gender differences in social roles. Vegetable and Fruit consumption data reveal that most individuals report regular intake, with females exhibiting a higher proportion of consumption compared to males, potentially indicating gender-related differences in health behaviors. Sex distribution suggests a slightly higher number of females than males in the dataset, though the overall distribution remains relatively balanced.
 
 ```{r}
 #| echo: false
@@ -57,9 +57,9 @@ The objective is to examine trends in obesity prevalence over the survey years a
 #| fig-cap: Distribution of Age Group, Employment Status, Vegetable Consumption, Fruit Consumption, and Sex by Gender in the Dataset.
 #| fig-align: center
 #| fig-width: 8
-#| fig-height: 6
+#| fig-height: 4
 
-df <- read.csv("D:/HuaweiMoveData/Users/13329/Desktop/DAProject7.csv", stringsAsFactors = TRUE)
+df <- read.csv("DAProject7.csv", stringsAsFactors = TRUE)
 data <- df
 
 data <- data %>%
@@ -97,42 +97,28 @@ grid.arrange(
                         c(4, 5, 3)))
 ```
 
-## Obesity changes over time (2008-2012)
+## Obesity changes and trend over time (2008-2012)
 
-@tbl-yearly-obesity-rate presents the yearly obesity rates in Scotland between 2008 and 2012. Overall, the obesity rate dropped to its lowest point in 2009 (28.79%), and then rose sharply in 2010, reaching its highest point in five years (30.47%). After that, the obesity rate fell back and stabilized in 2011-2012. The data shows that there were some fluctuations in the obesity rate during this period, but it generally remained between 29% and 30.5%.
-
-```{r}
-#| echo: false
-#| label: tbl-yearly-obesity-rate
-#| tbl-cap: Yearly Obesity Rate in Scotland from 2008 to 2012.
-
-yearly_rate <- data %>%
-  group_by(Year) %>%
-  summarise(ObesityRate = mean(Obese == "Yes") * 100)
-
-yearly_rate %>%
-  gt() %>%
-  tab_header(title = "Yearly Obesity Rate (2008-2012)") %>%
-  fmt_number(columns = ObesityRate, decimals = 2)
-```
-
-## Obesity trend over time (2008-2012)
-
-@fig-yearly-obesity shows the yearly trend of obesity rate in Scotland from 2008 to 2012. The trend shows that after the obesity rate fell in 2009, it rose significantly in 2010, and then gradually fell back and stabilized. The fluctuation in 2010 may reflect the increase in health risk factors that year, while the slowdown after 2011 may be related to health intervention measures and the improvement of awareness of physiological health management. Overall, the obesity rate shows periodic fluctuations but remains at a relatively high level.
+@fig-yearly-obesity shows that the yearly obesity rates in Scotland from 2008 to 2012 show periodic fluctuations but remain relatively high. The rate dropped to its lowest point in 2009 (28.79%), then rose sharply in 2010 to its five-year peak (30.47%), before gradually stabilizing in 2011-2012. This fluctuation in 2010 may reflect an increase in health risk factors, while the slowdown after 2011 could be linked to health interventions and improved awareness of physiological health management. Overall, obesity rates fluctuated within a range of 29% to 30.5% during this period.
 
 ```{r}
 #| echo: false
 #| fig-cap: Yearly Obesity Rate Trend in Scotland (2008-2012)
 #| label: fig-yearly-obesity
 #| fig-align: center
-#| fig-width: 6
-#| fig-height: 4
+#| fig-width: 7
+#| fig-height: 3
+
+yearly_rate <- data %>%
+  group_by(Year) %>%
+  summarise(ObesityRate = mean(Obese == "Yes") * 100)
 
 ggplot(yearly_rate, aes(x = Year, y = ObesityRate)) +
   geom_line(color = "blue", linewidth = 1) +
   geom_point(color = "darkblue", size = 2) +
-  labs(title = "Yearly Obesity Rate Trend (2008-2012)",
-       y = "Obesity Rate (%)", x = "Year") +
+  geom_text(aes(label = round(ObesityRate, 2)), vjust = -0.5, size = 4) +
+  labs(y = "Obesity Rate (%)", x = "Year") +
+  ylim(min(yearly_rate$ObesityRate) - 0.1, max(yearly_rate$ObesityRate) + 0.3) +
   theme_minimal()
 
 ```
@@ -141,12 +127,16 @@ ggplot(yearly_rate, aes(x = Year, y = ObesityRate)) +
 
 In this section, we explore the obesity rates by various grouping variables (Age Group, Employment, Vegetable Intake, and Fruit Intake) stratified by Sex. The obesity rates are counted and generates @fig-group-wise.
 
+Obesity rates peak at ages 55-64 before declining, with gender differences more pronounced in younger groups, where females have higher rates, but this trend reverses slightly in middle age due to metabolic and lifestyle changes. Employment status strongly influences obesity, with the highest prevalence among those permanently unable to work and the lowest among students. Caregiving roles and job-seeking categories also reveal gender disparities, reinforcing the link between socioeconomic conditions and obesity.
+
 ```{r}
 #| warning: false
 #| message: false
 #| label: fig-group-wise
 #| fig-cap: Obesity Rates by Demographic and Lifestyle Factors.
 #| fig-align: center
+#| fig-width: 8
+#| fig-height: 6
 
 # Create a function to calculate obesity rates
 calculate_obesity_rates <- function(data, group_var, group_name) {
@@ -174,7 +164,7 @@ p1 <- ggplot(grouped_age, aes(x = AgeGroup, y = ObesityRate, fill = Sex)) +
     plot.title   = element_text(size = 11, face = "bold"),
     axis.title   = element_text(size = 10)
   ) +
-  ggtitle("(1) by Age Group and Sex") +
+  ggtitle("by Age Group and Sex") +
   ylim(0, 45)
 
 #=== Plot 2: Employment (flip to avoid crowded x-axis) ===#
@@ -191,7 +181,7 @@ p2 <- ggplot(grouped_employment, aes(x = Employment, y = ObesityRate, fill = Sex
     plot.title   = element_text(size = 11, face = "bold"),
     axis.title   = element_text(size = 10)
   ) +
-  ggtitle("(2) by Employment") +
+  ggtitle("by Employment and Sex") +
   ylim(0, 45)
 
 #=== Plot 3: Vegetable Intake ===#
@@ -206,7 +196,7 @@ p3 <- ggplot(grouped_veg, aes(x = Veg, y = ObesityRate, fill = Sex)) +
     plot.title   = element_text(size = 11, face = "bold"),
     axis.title   = element_text(size = 10)
   ) +
-  ggtitle("(3) by Vegetable Intake and Sex") +
+  ggtitle("by Vegetable Intake and Sex") +
   ylim(0, 45)
 
 #=== Plot 4: Fruit Intake ===#
@@ -221,7 +211,7 @@ p4 <- ggplot(grouped_fruit, aes(x = Fruit, y = ObesityRate, fill = Sex)) +
     plot.title   = element_text(size = 11, face = "bold"),
     axis.title   = element_text(size = 10)
   ) +
-  ggtitle("(4) by Fruit Intake and Sex") +
+  ggtitle("by Fruit Intake and Sex") +
   ylim(0, 45)
 
 #=== Combine plots ===#
@@ -241,48 +231,18 @@ combined_plot
 
 ```
 
-1.  Obesity Rate by Age Group and Sex:Obesity rates increase with age, peaking at 55-64 years (36.9% males, 35.4% females), before declining in older adults. Gender differences are evident in younger age groups, with females showing higher rates, but the trend reverses slightly in middle age, indicating that metabolic and lifestyle changes play a role.
-
-2.  Obesity Rate by Employment Status and Sex: Obesity prevalence varies by employment status, highest among those permanently unable to work (41.9% females, 36.2% males) and lowest among students (13.9% females, 8.6% males). Gender differences appear in caregiving roles and job-seeking categories, emphasizing the link between socioeconomic conditions and obesity.
-
-3.  Obesity Rate by Vegetable Intake and Sex: Higher vegetable intake is associated with lower obesity rates for both sexes, with a stronger effect in females (from 33.4% to 28.9%). This suggests a protective role of vegetable consumption against obesity, reinforcing the importance of dietary habits in obesity prevention.
-
-4.  Obesity Rate by Fruit Intake and Sex:Unlike vegetables, fruit intake shows minimal association with obesity, as obesity rates remain nearly unchanged regardless of fruit consumption (29.9% vs. 29.8% for females, 28.9% vs. 29.6% for males). This highlights potential differences in how various dietary components impact obesity.
-
-Age shows the most consistent pattern, with employment status exhibiting the widest variation, particularly for students and those unable to work. Vegetable intake correlates with lower obesity rates, whereas fruit intake shows little impact. Gender differences vary across factors, illustrating the complexity of obesity risk.
+Dietary habits play a role, as higher vegetable intake is linked to lower obesity rates, particularly in females, suggesting a protective effect. However, fruit consumption shows little association with obesity, indicating potential differences in dietary impact. Age remains the most consistent predictor, while employment status shows the greatest variation, particularly for students and those unable to work. Gender differences fluctuate across factors, highlighting the complexity of obesity risk.
 
 ## Variable Relationships
 
-In this section, we perform chi-square tests to assess the association between categorical variables and obesity status, and then compute a correlation matrix (and its heatmap) on a numeric copy of the data.
-
-### Chi-square Tests
-
-```{r}
-# Define categorical variables
-cat_vars <- c("AgeGroup", "Sex", "Employment", "Veg", "Fruit")
-chi_results <- list()
-
-# Perform chi-square tests comparing each categorical variable with Obese status
-for (var in cat_vars) {
-  chi_results[[var]] <- chisq.test(table(df[[var]], df$Obese))
-}
-
-# Extract and print p-values from the chi-square tests
-chi_p_values <- sapply(chi_results, function(x) x$p.value)
-print(chi_p_values)
-
-```
-
-Age group, employment status, and vegetable intake show significant associations with obesity, while sex and fruit intake do not reach statistical significance. These findings validate previous observations and highlight key influencing factors.
-
 ### Correlation Analysis
-
-For the correlation analysis, we create a numeric copy of the data to convert categorical variables into numerical codes.
 
 ```{r}
 #| label: fig-heatmap
 #| fig-cap: Correlation Heatmap.
 #| fig-align: center
+#| fig-width: 5
+#| fig-height: 5
 
 # Create a numeric copy (do NOT overwrite the original df)
 df_num <- df
@@ -306,20 +266,24 @@ df_cor <- df_cor[, non_constant_cols]
 
 # Calculate the correlation matrix
 cor_matrix <- cor(df_cor, use = "pairwise.complete.obs")
-print(cor_matrix)
 
 # Plot the correlation heatmap
+par(mar = c(0.1, 0.1, 0.1, 0.1), oma = c(0, 0, 0, 0))
+
 corrplot(
-  cor_matrix,
-  method = "color",
-  type = "upper",
-  col = colorRampPalette(c("steelblue", "white", "firebrick"))(200),
-  addCoef.col = "black",
-  tl.col = "black",
+  cor_matrix, 
+  method = "color", 
+  type = "upper", 
+  col = colorRampPalette(c("steelblue", "white", "firebrick"))(200), 
+  addCoef.col = "black", 
+  tl.col = "black", 
   tl.srt = 45,
   tl.cex = 0.8,
   diag = FALSE,
-  mar = c(0, 0, 2, 0)
+  mar = c(0, 0, 0, 0),
+  number.cex = 0.85,
+  cl.ratio = 0.1,    
+  cl.pos = "b"         
 )
 
 ```
@@ -329,38 +293,51 @@ In @fig-heatmap, age shows the strongest correlation with obesity (r = 0.10), fo
 ### Potential Influencing factors
 
 ```{r}
-#| label: fig-chi-square
-#| fig-cap: Chi-square Test P-values for Association with Obesity.
-#| fig-align: center
+#| fig.width: 12
+#| fig.height: 5
+#| label: fig-potential
+#| fig-cap: Potential Factor Tests.
 
-# Analyzing the significant factors from chi-square tests and correlation analysis
+# Define categorical variables
+cat_vars <- c("AgeGroup", "Sex", "Employment", "Veg", "Fruit")
+chi_results <- list()
 
-# Create a data frame of chi-square p-values for visualization
+# Perform chi-square tests comparing each categorical variable with Obese status
+for (var in cat_vars) {
+  chi_results[[var]] <- chisq.test(table(df[[var]], df$Obese))
+}
+
+# Extract and print p-values from the chi-square tests
+chi_p_values <- sapply(chi_results, function(x) x$p.value)
+
+# 1. Generate the first plot (Chi-square results)
 chi_results_df <- data.frame(
   Variable = names(chi_p_values),
   P_Value = chi_p_values,
-  Significant = chi_p_values < 0.05
-)
+  Significant = chi_p_values < 0.05)
 
-ggplot(chi_results_df, aes(x = reorder(Variable, P_Value), y = P_Value, fill = Significant)) +
+chi_plot <- ggplot(chi_results_df, 
+                   aes(x = reorder(Variable, P_Value), 
+                       y = P_Value, 
+                       fill = Significant)) +
   geom_bar(stat = "identity") +
   geom_hline(yintercept = 0.05, linetype = "dashed", color = "firebrick") +
   coord_flip() +
   scale_fill_manual(values = c("grey", "steelblue")) +
-  theme_minimal() +
-  labs(
-    x = "Variable",
-    y = "P-value",
-    caption = "Red dashed line indicates significance level (0.05)"
-  )
-```
+  theme_minimal(base_size = 12) +
+  theme(
+    # Center and bold the plot title
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    # Place the legend at the bottom
+    legend.position = "bottom",
+    # Hide the legend title
+    legend.title = element_blank(),
+    # Adjust margins around the plot
+    plot.margin = margin(t = 10, r = 20, b = 10, l = 10)) +
+  labs(x = "Variable",y = "P-value") +
+  ggtitle("Chi-square Test P-values for Association with Obesity")
 
-```{r}
-#| label: fig-correlations
-#| fig-cap: Correlations with Obesity Status.
-#| fig-align: center
-
-# Identify top correlations with obesity
+# 2. Generate the second plot (Correlation results)
 obesity_correlations <- data.frame(
   Variable = colnames(cor_matrix),
   Correlation = cor_matrix[, "Obese"]
@@ -368,22 +345,31 @@ obesity_correlations <- data.frame(
   filter(Variable != "Obese") %>%
   arrange(desc(abs(Correlation)))
 
-ggplot(obesity_correlations, aes(x = reorder(Variable, abs(Correlation)), 
-                                y = Correlation, 
-                                fill = Correlation > 0)) +
+corr_plot <- ggplot(obesity_correlations, 
+                    aes(x = reorder(Variable, abs(Correlation)), 
+                        y = Correlation, 
+                        fill = Correlation > 0)) +
   geom_bar(stat = "identity") +
   coord_flip() +
   scale_fill_manual(values = c("firebrick", "steelblue"), 
                     labels = c("Negative", "Positive")) +
-  theme_minimal() +
-  labs(
-    x = "Variable",
-    y = "Correlation Coefficient",
-    fill = "Direction"
-  )
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    # Adjust margins, leaving extra space on the left
+    plot.margin = margin(t = 10, r = 10, b = 10, l = 20)) +
+  labs(x = "Variable", y = "Correlation Coefficient") +
+  ggtitle("Correlations with Obesity Status")
+
+combined_plot <- chi_plot + corr_plot +
+  plot_layout(nrow = 1, widths = c(1, 1))
+
+print(combined_plot)
 ```
 
-Based on the @fig-chi-square and @fig-correlations, the following factors appear to have the strongest association with obesity status:
+Based on the @fig-potential, the following factors appear to have the strongest association with obesity status:
 
 ```{r}
 # Print the significant factors from chi-square tests
@@ -402,26 +388,19 @@ Age emerges as the most critical factor in obesity risk, followed by employment 
 
 ## Variable Selection & Regression Modelling
 
-In this analysis, the primary objective is to understand the relationship between various socio-economic and lifestyle factors and the likelihood of an individual being obese. We will employ a logistic regression model where the response variable is Obese (Yes/No), and the predictors include Year, AgeGroup, Sex, Employment, Veg, and Fruit.
-
-We start by fitting the full logistic regression model containing all explanatory variables, which can be written as:
+In this analysis, the primary objective is to understand the relationship between various socio-economic and lifestyle factors and the likelihood of an individual being obese. We will employ a logistic regression model where the response variable is Obese (Yes/No), and the predictors include Year, AgeGroup, Sex, Employment, Veg, and Fruit. We start by fitting the full logistic regression model containing all explanatory variables, which can be written as:
 
 $$
 \begin{aligned}
-y_i &= \beta_0 + \beta_1 \cdot x_{1i} + \beta_2 \cdot x_{2i} + \beta_3 \cdot x_{3i} + \beta_4 \cdot x_{4i} + \beta_5 \cdot x_{5i} + \beta_6 \cdot x_{6i} \\
-    &= \beta_0 + \beta_{\text{Year}} \cdot \text{Year} + \beta_{\text{AgeGroup}} \cdot \text{AgeGroup} + \beta_{\text{Sex}} \cdot \text{Sex}+ \beta_{\text{Employment}} \cdot \text{Employment} + \beta_{\text{Fruit}} \cdot \text{Fruit} + \beta_{\text{Veg}} \cdot \text{Veg}
+y_i &= \beta_0 + \beta_{\text{Year}} \cdot \text{Year} + \beta_{\text{AgeGroup}} \cdot \text{AgeGroup} + \beta_{\text{Sex}} \cdot \text{Sex}+ \beta_{\text{Employment}} \cdot \text{Employment} + \beta_{\text{Fruit}} \cdot \text{Fruit} + \beta_{\text{Veg}} \cdot \text{Veg}
 \end{aligned}
 $$
-
-where
 
 -   $y_i$ denotes the log-odds of obesity for individual $i$,
 
 -   $\beta_0$ is the intercept, representing the baseline log-odds of obesity,
 
--   $\beta_{\text{Year}}$,$\beta_{\text{AgeGroup}}$, $\beta_{\text{Sex}}$, $\beta_{\text{Employment}}$,$\beta_{\text{Fruit}}$ and $\beta_{\text{Veg}}$ are the regression coefficients for the corresponding explanatory variables, indicating the change in log-odds of obesity for each unit change in the respective variable.
-
-Stepwise regression with backward selection will be used to determine whether the full model can be reduced based on the Akaike information criterion (AIC). Hence, the model which results in the lowest AIC will result in the final model fitted to the data. Based on @tbl-aic-summary, we can conclude the stepwise Logistic Regression model, with an AIC of 30078.14 is a better fit than the full model, with AIC of 30080.98. The Stepwise function has retained variables of AgeGroup, Sex, Employment and Veg, so the only removed variables are fruit and year.
+-   $\beta_{\text{Year}}$, $\beta_{\text{AgeGroup}}$, $\beta_{\text{Sex}}$, $\beta_{\text{Employment}}$,$\beta_{\text{Fruit}}$ and $\beta_{\text{Veg}}$ indicates the change in log-odds of obesity for each unit change in the respective variable.
 
 ```{r}
 #| echo: false
@@ -444,7 +423,7 @@ model <- glm(Obese ~ Year + AgeGroup + Sex + Employment + Fruit + Veg,
 
 full_model_aic <- AIC(model)
 
-stepwise_model <- stepAIC(model, direction = "both", trace = 1)
+stepwise_model <- stepAIC(model, direction = "both", trace = FALSE)
 stepwise_model_aic <- AIC(stepwise_model)
 
 retained_variables <- labels(terms(stepwise_model)) 
@@ -458,13 +437,12 @@ aic_table <- data.frame(
   AIC = c(full_model_aic, stepwise_model_aic),
   Retained_Variables = c("All", retained_summary)
 ) %>%
-  gt() %>%
-  tab_header(title = "AIC Comparison and Retained Variables")
+  gt() 
 aic_table
 
 ```
 
-@tbl-stepwise-coeff presents the regression coefficients, standard errors, z-values, and p-values for each variable category in the stepwise logistic regression model, assessing the statistical significance and impact of different variable on the odds of obesity.
+Stepwise regression with backward selection will be used to determine whether the full model can be reduced based on the Akaike information criterion (AIC). Hence, the model which results in the lowest AIC will result in the final model fitted to the data. Based on @tbl-aic-summary, we can conclude the stepwise Logistic Regression model, with an AIC of 30078.14 is a better fit than the full model, with AIC of 30080.98. The Stepwise function has retained variables of AgeGroup, Sex, Employment and Veg, so the only removed variables are fruit and year.
 
 ```{r}
 #| echo: false
@@ -510,7 +488,6 @@ summary_df <- coefficients_df %>%
 
 summary_df <- summary_df %>%
   gt() %>%
-  tab_header(title = "Stepwise Logistic Regression Model Coefficients by variable") %>%
   fmt_number(columns = c("Coefficient", "StdError", "ZValue"), decimals = 3) %>%
   fmt(columns = "PValue", fns = function(x) formatC(x, format = "e", digits = 3)) %>%
   cols_label(
@@ -522,25 +499,19 @@ summary_df <- summary_df %>%
   )
 
 summary_df
-
-
 ```
 
-Hence, from @tbl-stepwise-coeff we obtain the Stepwise logistic regression model looks like this:
+@tbl-stepwise-coeff presents the regression coefficients, standard errors, z-values, and p-values for each variable category in the stepwise logistic regression model, assessing the statistical significance and impact of different variable on the odds of obesity. We obtain the Stepwise logistic regression model looks like this:
 
 $$
 \begin{aligned}
-y_i &= \beta_0 + \beta_{\text{AgeGroup}} \cdot \text{AgeGroup} + \beta_{\text{Sex}} \cdot \text{Sex} + \beta_{\text{Employment}} \cdot \text{Employment} + \beta_{\text{Veg}} \cdot \text{Veg} \\
-    &= -1.372 + 0.719 \cdot \text{AgeGroup} - 0.044 \cdot \text{Sex} - 0.072 \cdot \text{Employment} - 0.199 \cdot \text{Veg}
+y_i &= -1.372 + 0.719 \cdot \text{AgeGroup} - 0.044 \cdot \text{Sex} - 0.072 \cdot \text{Employment} - 0.199 \cdot \text{Veg}
 \end{aligned}
-$$ @tbl-stepwise show the detailed results of the stepwise logistic regression.The odds ratio assesses how the odds of the dependent variable(Obese) change with a 1 unit change in the independent variable(AgeGroup, Sex, Employment, Veg). The lower and Upper 95% Confidence Interval indicates the range in which the Odds Ratio will lie for each variable. The P-Value tests the null hypothesis that the Odds Ratio is equal to 1. For all variables, the p-value \< 0.05, meaning it is statistically significant.
+$$
 
 ```{r}
 #| echo: false
-#| label: tbl-stepwise
-#| tbl-cap: "Stepwise Logistic Regression Results: Odds Ratios and Confidence Intervals for Obesity Prevalence."
-
-
+#| 
 model_summary <- summary(stepwise_model)
 p_values <- model_summary$coefficients[,4]
 
@@ -559,26 +530,15 @@ for (var_name in names(odds_ratios)) {
     p_values[var_name]
   )
 }
-
-or_table_stepwise <- odds_ratios_t %>%
-  gt() %>%
-  tab_header(title = "Stepwise Logistic Regression Results: Odds Ratios, Confidence Intervals, and P-Values") %>%
-  fmt_number(columns = -1, rows = 1:3, decimals = 3) %>%
-  fmt(columns = -1, rows = 4, fns = function(x) formatC(x, format = "e", digits = 3))
-
-or_table_stepwise
-
 ```
-
-@fig-forest-plot illustrates the impact of various factors on obesity prevalence. The results show that the older the age, the higher the risk of obesity, especially in the 55-74 age group, where the risk is highest. Unemployed or inactive individuals have a higher likelihood of obesity, while full-time students have the lowest obesity risk. Additionally, vegetarians have a lower risk of obesity, suggesting that dietary habits play an important role in obesity development. Gender does not have a significant effect on obesity, with males having an odds ratio close to 1. Overall, age, employment status, and dietary habits are the main factors influencing obesity, while gender has a weaker effect.
 
 ```{r}
 #| echo: false
 #| label: fig-forest-plot
 #| fig-cap: Forest plot of Odds Ratios from the Stepwise Logistic Regression model with 95% confidence intervals.
 #| fig-align: center
-#| fig-width: 6
-#| fig-height: 4
+#| fig-width: 7
+#| fig-height: 3.5
 #| theme: minimal
 
 
@@ -601,6 +561,8 @@ ggplot(or_table_stepwise, aes(x = OR, y = Term)) +
   theme_minimal(base_size = 12)
 ```
 
+@fig-forest-plot illustrates the impact of various factors on obesity prevalence. The results show that the older the age, the higher the risk of obesity, especially in the 55-74 age group, where the risk is highest. Unemployed or inactive individuals have a higher likelihood of obesity, while full-time students have the lowest obesity risk. Additionally, vegetarians have a lower risk of obesity, suggesting that dietary habits play an important role in obesity development. Gender does not have a significant effect on obesity, with males having an odds ratio close to 1. Overall, age, employment status, and dietary habits are the main factors influencing obesity, while gender has a weaker effect.
+
 ## Model Diagnostics & Evaluation
 
 ```{r}
@@ -612,25 +574,10 @@ stepwise_model <- stepAIC(model, direction = "both", trace = 0)
 
 ```
 
-### Check Outliers & Cook's Distance
-@fig-cooks-distance presents Cook’s Distance, which assesses the influence of individual observations on the Stepwise Logistic Regression model estimates. The plot shows that most observations have low Cook’s Distance values, with no apparent extreme outliers or highly influential points. This suggests that the model’s fit is not significantly affected by any single observation, indicating good overall robustness.
-```{r}
-#| echo: false
-#| label: fig-cooks-distance
-#| fig-cap: Cook's Distance for Identifying Influential Observations.
-#| fig-align: center
-#| fig-width: 8
-#| fig-height: 6
-
-cooks_distance <- cooks.distance(stepwise_model)
-plot(cooks_distance, type = "h", main = "Cook's Distance")
-abline(h = 4 / length(cooks_distance), col = "red") 
-
-```
-
-
 ### Check Collinearity (VIF Check)
+
 @tbl-vif-values presents the Variance Inflation Factors (VIF) to assess multicollinearity among the predictor variables. The VIF values for all variables are below 5, indicating no severe multicollinearity issues. However, AgeGroup (VIF = 3.68) and Employment (VIF = 3.82) show relatively higher values compared to other predictors, suggesting a moderate correlation with other variables. The tolerance values further confirm that multicollinearity is not a significant concern in this model.
+
 ```{r}
 #| echo: false
 #| label: tbl-vif-values
@@ -639,17 +586,12 @@ abline(h = 4 / length(cooks_distance), col = "red")
 vif_results <- check_collinearity(stepwise_model)
 
 gt(vif_results) %>%
-  tab_header(
-    title = "Variance Inflation Factors (VIF)",
-    subtitle = "Multicollinearity Check"
-  ) %>%
   fmt_number(columns = 2, decimals = 2)
 
 ```
 
-
 ### Hosmer-Lemeshow Test
-@tbl-hoslem-test assesses the goodness-of-fit for logistic regression models. The chi-squared statistic is 12.468 with 8 degrees of freedom, and the p-value (0.1320) is much greater than 0.05. This indicates insufficient evidence to reject the null hypothesis, suggesting that the model provides a reasonable fit to the data.
+
 ```{r}
 #| echo: false
 #| label: tbl-hoslem-test
@@ -667,15 +609,16 @@ hoslem_summary <- data.frame(
 
 hoslem_summary %>%
   gt() %>%
-  tab_header(title = "Hosmer-Lemeshow Test Results") %>%
   fmt_number(columns = 2:4, decimals = 4) %>%
   cols_label(Statistic = "Test Statistic", Value = "Value", df = "Degrees of Freedom", p_value = "P-value") %>%
   tab_options(table.font.size = "small")
 
 ```
 
+@tbl-hoslem-test assesses the goodness-of-fit for logistic regression models. The chi-squared statistic is 12.468 with 8 degrees of freedom, and the p-value (0.1320) is much greater than 0.05. This indicates insufficient evidence to reject the null hypothesis, suggesting that the model provides a reasonable fit to the data.
+
 ### ROC Curve & AUC
-@fig-roc-curve evaluates the discriminative ability of the stepwise logistic regression model. The area under the curve (AUC) is 0.587, which is only slightly better than random chance (AUC = 0.5). This suggests that the model has weak predictive performance, indicating that further refinement, such as feature selection or alternative modeling approaches, may be necessary to improve classification accuracy.
+
 ```{r}
 #| echo: false
 #| fig-cap: ROC Curve for stepwise logistic regression Model with AUC
@@ -687,7 +630,7 @@ hoslem_summary %>%
 predicted_prob <- predict(stepwise_model, type = "response")
 roc_curve <- roc(data$Obese, predicted_prob) 
 
-plot(roc_curve, col = "blue", lwd = 2, main = "ROC Curve (Stepwise Model)",
+plot(roc_curve, col = "blue", lwd = 2, 
      xlab = "False Positive Rate (1 - Specificity)", 
      ylab = "True Positive Rate (Sensitivity)")
 
@@ -697,8 +640,12 @@ legend("topleft",legend = paste("AUC =", round(auc(roc_curve), 3)),
 
 ```
 
+@fig-roc-curve evaluates the discriminative ability of the stepwise logistic regression model. The area under the curve (AUC) is 0.587, which is only slightly better than random chance (AUC = 0.5). This suggests that the model has weak predictive performance, indicating that further refinement, such as feature selection or alternative modeling approaches, may be necessary to improve classification accuracy.
+
 ### Confusion Matrix & Accuracy
-@tbl-confusion-accuracy evaluates the classification performance of the stepwise logistic regression model. The overall accuracy is 67.33%, indicating a moderate predictive ability. However, the model exhibits a high false negative rate, misclassifying 6,262 obese individuals as not obese. This suggests that while the model performs relatively well in identifying non-obese individuals, its ability to correctly classify obesity cases is limited. The imbalance in misclassification may impact its practical utility in applications requiring accurate obesity detection.
+
+@tbl-accuracy evaluates the classification performance of the stepwise logistic regression model. The overall accuracy is 67.33%, indicating a moderate predictive ability. However, the model exhibits a high false negative rate, misclassifying 6,262 obese individuals as not obese. This suggests that while the model performs relatively well in identifying non-obese individuals, its ability to correctly classify obesity cases is limited. The imbalance in misclassification may impact its practical utility in applications requiring accurate obesity detection.
+
 ```{r}
 #| echo: false
 #| label: tbl-accuracy
@@ -723,7 +670,6 @@ accuracy <- round(conf_matrix$overall["Accuracy"], 4)
 
 cm_table %>%
   gt() %>%
-  tab_header(title = "Confusion Matrix for Stepwise Model") %>%
   cols_label(`Predicted Class` = "Predicted Class", 
              `Actual Class` = "Actual Class", 
              `Count` = "Count") %>%
@@ -738,3 +684,5 @@ cm_table %>%
 # Conclusions {#sec-con}
 
 This study examined the prevalence of obesity in Scotland from 2008 to 2012, analyzing its association with socio-economic and lifestyle factors. The exploratory analysis revealed that obesity rates fluctuated over time but remained consistently high, with variations across demographic and behavioral groups. The stepwise logistic regression model identified age, employment status, and vegetable intake as significant predictors of obesity, while gender had a weaker influence. Model diagnostics confirmed a reasonable fit, but the predictive performance was limited, with a high false negative rate and an AUC of 0.587. These findings highlight the complexity of obesity determinants and suggest that targeted public health interventions should focus on high-risk groups, particularly older adults and those with socio-economic disadvantages, while promoting healthier dietary habits.
+
+The collaborative code and data files are available in the GitHub repository: <https://github.com/FSUniAccount/Group11>.
