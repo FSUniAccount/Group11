@@ -44,4 +44,3 @@ The repository has been set to public, and instructors **JBelmont89** and **drra
 
 This README serves as a guide to understanding the structure and content of our project. Please reach out to the team if you have any questions!
 
-
