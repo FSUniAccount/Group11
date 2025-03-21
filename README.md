@@ -5,9 +5,9 @@ This project is part of the **Data Analysis Group Project 2025**, focusing on an
 
 ## Repository Structure
 - `Group_11_Analysis.qmd` - The main analysis script written in Quarto.
+- `Group_11_Analysis.pdf` - The rendered report summarizing our findings.
 - `Group_11_Analysis.html` - The rendered report summarizing our findings.
-- `data/` - Contains the allocated dataset (DAPProject3.csv) used for analysis.
-- `plots/` - Stores generated visualizations.
+- `DAProject7.csv` - Contains the allocated dataset (DAPProject3.csv) used for analysis.
 - `README.md` - This file, providing an overview of the project.
 
 ## Research Questions
